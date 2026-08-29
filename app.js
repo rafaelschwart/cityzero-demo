@@ -293,17 +293,76 @@ function ovChart() {
     if (i % 31 === 0) v += 30;
     pts.push({ d, v: Math.max(30, v) });
   }
+  pts.forEach((p, i) => { p.b = Math.round(p.v * 0.32); p.n = ((i * 13) % 7) >= 5 ? 2 : ((i * 13) % 7) >= 3 ? 1 : 0; });
   const max = Math.max.apply(null, pts.map(p => p.v)) * 1.08;
   const W = 1000, H = 240;
   const xy = pts.map((p, i) => [i / (days - 1) * W, H - p.v / max * H]);
+  const yb = xy.map(c => H - (H - c[1]) * 0.32);
+  const yn = xy.map((c, i) => H - 12 - ((i * 13) % 7));
   const line = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join("");
   const area = line + `L${W},${H}L0,${H}Z`;
-  const bline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + (H - (H - c[1]) * 0.32).toFixed(1)).join("");
-  const nline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + (H - 12 - ((i * 13) % 7)).toFixed(1)).join("");
+  const bline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + yb[i].toFixed(1)).join("");
+  const nline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + yn[i].toFixed(1)).join("");
+  window._OVC = { pts, days, H, y0: xy.map(c => c[1]), y1: yb, y2: yn };
   const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
   const labels = [];
   for (let i = 0; i < days; i += 11) labels.push(lf.format(pts[i].d));
   return { area, line, bline, labels };
+}
+
+/* Hover layer del Gym Activity: crosshair + dots por serie + tooltip con
+   fecha y valores (port del tooltip Recharts del template), animado con anime.js. */
+let _ovLast = -1, _ovOn = false;
+function ovHover(e) {
+  const C = window._OVC; if (!C) return;
+  const wrap = e.currentTarget;
+  const svg = wrap.querySelector(".actsvg");
+  const hov = document.getElementById("achover");
+  if (!svg || !hov) return;
+  const r = svg.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  const x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+  const i = Math.max(0, Math.min(C.days - 1, Math.round(x / r.width * (C.days - 1))));
+  const px = (r.left - wr.left) + i / (C.days - 1) * r.width;
+  const topSvg = r.top - wr.top;
+  const line = hov.querySelector(".acx");
+  line.style.left = px + "px"; line.style.top = topSvg + "px"; line.style.height = r.height + "px";
+  const ys = [C.y0[i], C.y1[i], C.y2[i]];
+  hov.querySelectorAll(".acdot").forEach((d, k) => {
+    d.style.left = px + "px";
+    d.style.top = (topSvg + ys[k] / C.H * r.height) + "px";
+  });
+  const tip = document.getElementById("actip");
+  if (i !== _ovLast) {
+    _ovLast = i;
+    const p = C.pts[i];
+    const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { day: "numeric", month: "long", year: "numeric" });
+    tip.innerHTML = `<b>${lf.format(p.d)}</b>
+      <span><i></i>${tr("Check-ins", "Check-ins")}<em>${p.v}</em></span>
+      <span><i class="dim"></i>${tr("Class bookings", "Reservas de clase")}<em>${p.b}</em></span>
+      <span><i class="dim2"></i>${tr("New members", "Altas")}<em>${p.n}</em></span>`;
+  }
+  const tw = tip.offsetWidth || 190;
+  const flip = px + tw + 28 > wr.width;
+  tip.style.left = (flip ? px - tw - 16 : px + 16) + "px";
+  tip.style.top = Math.max(topSvg + 6, Math.min(topSvg + ys[0] / C.H * r.height - 24, topSvg + r.height - 96)) + "px";
+  if (!_ovOn) {
+    _ovOn = true;
+    const anim = typeof anime !== "undefined" && !(typeof REDUCED !== "undefined" && REDUCED);
+    hov.style.opacity = 1;
+    if (anim) {
+      anime.remove([tip, hov]);
+      anime({ targets: tip, opacity: [0, 1], scale: [0.94, 1], duration: 200, easing: "easeOutExpo" });
+      anime({ targets: hov.querySelectorAll(".acdot"), scale: [0, 1], duration: 280, delay: anime.stagger(45), easing: "easeOutBack" });
+    } else { tip.style.opacity = 1; }
+  }
+}
+function ovLeave() {
+  const hov = document.getElementById("achover"); if (!hov) return;
+  _ovOn = false; _ovLast = -1;
+  if (typeof anime !== "undefined" && !(typeof REDUCED !== "undefined" && REDUCED)) {
+    anime.remove(hov);
+    anime({ targets: hov, opacity: 0, duration: 130, easing: "easeOutQuad" });
+  } else hov.style.opacity = 0;
 }
 
 function ovCard(icon, label, value, valId, badge, badgeCls, sub, hash) {
@@ -422,7 +481,11 @@ function vToday() {
         <button class="btn outline sm" onclick="location.hash='${FULL ? "#report" : "#pulsereport"}'">${tr("View report", "Ver reporte")}</button>
       </div>
     </div>
-    <div class="actwrap">
+    <div class="actwrap" onmousemove="ovHover(event)" onmouseleave="ovLeave()">
+      <div class="achover" id="achover" aria-hidden="true">
+        <i class="acx"></i><i class="acdot"></i><i class="acdot dim"></i><i class="acdot dim2"></i>
+        <div class="actip" id="actip"></div>
+      </div>
       <div class="actlegs">
         <span class="actleg"><i></i>${tr("Check-ins", "Check-ins")}</span>
         <span class="actleg dim"><i></i>${tr("Class bookings", "Reservas de clase")}</span>
