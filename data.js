@@ -67,6 +67,58 @@ const DATA = {
     ],
   },
 
+  /* Inbox unificado (CONCEPT · SAMPLE): un solo lugar para email, chat,
+     WhatsApp, IG y FB. Conecta via Meta Business + WhatsApp Business + Gmail
+     tras la limpieza Meta (paso 0). Nombres sample; canales reales del caso. */
+  inbox: {
+    sample: true,
+    channels: [
+      ["Email", 6, "mail"], ["Web chat", 2, "chat"], ["WhatsApp", 4, "wa"],
+      ["Instagram", 9, "ig"], ["Facebook", 1, "fb"], ["Phone", 0, "ph"],
+    ],
+    convos: [
+      { id: "c1", name: "Melissa R.", ch: "WhatsApp", when: "2m", unread: 2, pin: true,
+        role: "Tour lead · from the landing page",
+        prev: "Perfect, Saturday 10 AM works for me!",
+        thread: [
+          { who: "them", t: "10:31", txt: "Hi! I requested a tour through your page. Is Saturday morning possible?" },
+          { who: "us", t: "10:34", txt: "Hey Melissa! Of course. We have 10 AM or 11:30 AM with a coach. Which one works?" },
+          { who: "them", t: "10:41", txt: "Perfect, Saturday 10 AM works for me!" },
+          { who: "us", t: "10:42", txt: "Booked. You'll get a reminder the day before. Ask for Andreina at the front desk." },
+        ] },
+      { id: "c2", name: "Dana V.", ch: "Instagram", when: "18m", unread: 1, pin: true,
+        role: "Lead · asked from the Baddie Bootcamp post",
+        prev: "How much is the monthly plan?",
+        thread: [
+          { who: "them", t: "09:58", txt: "Saw the Baddie Bootcamp reel. How much is the monthly plan?" },
+          { who: "us", t: "10:05", txt: "Hey Dana! Monthly Unlimited is $129.99 and includes all 40+ classes. Want a free guided tour this week?" },
+          { who: "them", t: "10:12", txt: "How much is the monthly plan?" },
+        ] },
+      { id: "c3", name: "Jorge G.", ch: "Email", when: "1h", unread: 0, pin: false,
+        role: "Member · Monthly Premium",
+        prev: "I was charged twice on the 3rd, can someone check?",
+        thread: [
+          { who: "them", t: "09:02", txt: "I was charged twice on the 3rd, can someone check? I can send the statement." },
+          { who: "us", t: "09:15", txt: "On it, Jorge. I see the duplicate in Glofox; refund goes out today and you'll get the confirmation by email." },
+        ] },
+      { id: "c4", name: "Carla M.", ch: "Facebook", when: "3h", unread: 0, pin: false,
+        role: "Prospect · found the page on Google",
+        prev: "Are you open Sundays until 6?",
+        thread: [
+          { who: "them", t: "07:40", txt: "Are you open Sundays until 6? Your site says 3:30 but Google says 6 PM." },
+          { who: "us", t: "07:52", txt: "Great catch: weekends we close at 6 PM. The site is being corrected this week. See you Sunday!" },
+        ] },
+      { id: "c5", name: "Luis P.", ch: "Web chat", when: "5h", unread: 0, pin: false,
+        role: "Member · Monthly Unlimited",
+        prev: "Can I freeze my plan for July?",
+        thread: [
+          { who: "them", t: "05:20", txt: "Can I freeze my plan for July? I'll be traveling." },
+          { who: "us", t: "05:31", txt: "Done, Luis. Freeze runs July 1-31, billing resumes August 1. Enjoy the trip!" },
+        ] },
+    ],
+    note: "One inbox for every channel a lead can arrive through. Replies go out from City Zero's own accounts; WhatsApp Business and Meta inboxes connect after the step-0 cleanup.",
+  },
+
   /* Instagram real: perfil + posts capturados con Apify el 20.08.2026 (research/raw/) */
   ig: {
     real: true, captured: "Aug 20",

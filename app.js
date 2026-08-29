@@ -27,6 +27,7 @@ const NAV_ICONS = {
   pipeline: _nsvg('<rect x="3" y="4" width="5" height="13" rx="1"/><rect x="10" y="4" width="5" height="9" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/>'),
   campaigns: _nsvg('<path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/>'),
   keep: _nsvg('<path d="M19 14c1.5-1.5 2-3.2 2-5a5 5 0 0 0-9-3 5 5 0 0 0-9 3c0 1.8.5 3.5 2 5l7 7 7-7z"/>'),
+  inbox: _nsvg('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1z"/>'),
   paidmedia: _nsvg('<path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="12" y="6" width="3" height="11"/><rect x="17" y="12" width="3" height="5"/>'),
   pulsereport: _nsvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 15h8M8 11h3"/>'),
   engine: _nsvg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
@@ -42,6 +43,7 @@ const SECTIONS_SIMPLE = [
   { id: "grow", label: "Grow" },
   { id: "pipeline", label: "Pipeline", badge: () => DATA.pipeline.cards.filter(c => c.breach).length, hot: true },
   { id: "campaigns", label: "Campaigns" },
+  { id: "inbox", label: "Inbox", badge: () => DATA.inbox.convos.reduce((a, c) => a + c.unread, 0) || null, hot: true },
   { id: "keep", label: "Keep" },
   { group: "Marketing" },
   { id: "paidmedia", label: "Ads Report" },
@@ -117,6 +119,7 @@ const SECTION_DESC = {
   grow: "Everything that turns a stranger into a member: the count on its way to 500, the funnel with names, the tours to confirm.",
   keep: "Growth you already paid for: failed charges to recover, quiet members to call back, first visits to welcome.",
   hours: "The heatmap of your week, drawn from real door events: staff the peaks, move classes into the crowd, aim ads at the quiet hours.",
+  inbox: "Email, WhatsApp, Instagram, Facebook and web chat in one queue. Nobody asks 'who saw this?' again.",
   engine: "Everything running underneath, in silence: the crosses, the reserve, 15 of 316 endpoints. Depth as inventory, not as noise.",
   classes: "The weekly timetable with live fill and waitlists per class, straight from their Glofox booking system.",
   access: "Who is in the gym right now, the daily curve, visit cohorts and at-risk members, fed by BioStar 2's local API.",
@@ -641,6 +644,74 @@ function mountHourDetail() {
   let bd = 0, bi = 0, bv = -1;
   H.matrix.forEach((row, d) => row.forEach((v, i) => { if (v > bv) { bv = v; bd = d; bi = i; } }));
   hourDetail(bd, bi);
+}
+
+/* Inbox unificado (Studio Chat del template, adaptado a City Zero) */
+function vInbox(selId) {
+  const ib = DATA.inbox;
+  const sel = ib.convos.find(c => c.id === selId) || ib.convos[0];
+  const unreadTotal = ib.convos.reduce((a, c) => a + c.unread, 0);
+  const chIcon = { WhatsApp: "wa", Instagram: "ig", Email: "mail", Facebook: "fb", "Web chat": "chat", Phone: "ph" };
+  const chans = ib.channels.map(([n, c]) => `
+    <div class="ibch"><span>${esc(n)}</span><b class="mono">${c || ""}</b></div>`).join("");
+  const rows = (pin) => ib.convos.filter(c => c.pin === pin).map(c => `
+    <div class="ibrow ${c.id === sel.id ? "sel" : ""}" onclick="location.hash='inbox/${c.id}'">
+      ${favatar(c.name, 32)}
+      <div class="ibmid">
+        <div class="ibtop"><b>${esc(c.name)}</b><span class="mono">${esc(c.when)}</span></div>
+        <div class="ibprev">${esc(c.prev)}</div>
+        <div class="ibchip">${esc(c.ch)}</div>
+      </div>
+      ${c.unread ? `<span class="n hot ibun">${c.unread}</span>` : ""}
+    </div>`).join("");
+  const msgs = sel.thread.map(m => m.who === "them" ? `
+    <div class="msg them">${favatar(sel.name, 26)}<div class="mb"><p>${esc(m.txt)}</p><span class="mt mono">${esc(m.t)}</span></div></div>` : `
+    <div class="msg us"><div class="mb"><p>${esc(m.txt)}</p><span class="mt mono">${esc(m.t)}</span></div><span class="favatar" style="width:26px;height:26px"><i>CZ</i></span></div>`).join("");
+  return `
+  ${topbar("Inbox", tr("EVERY CHANNEL A LEAD CAN ARRIVE THROUGH, ONE SCREEN, ONE REPLY BOX.", "TODOS LOS CANALES POR DONDE LLEGA UN LEAD, UNA PANTALLA, UNA CAJA DE RESPUESTA."), p2chip())}
+  <div class="grid"><div class="panel wide ibwrap">
+    <div class="ibgrid">
+      <aside class="ibleft">
+        <div class="iblt">${tr("Inbox", "Bandeja")}<b class="mono">${unreadTotal}</b></div>
+        <div class="ibsec">${tr("Channels", "Canales")}</div>
+        ${chans}
+        <div class="ibnote">${esc(ib.note)}</div>
+      </aside>
+      <div class="iblist">
+        <div class="ibsec">${tr("Pinned", "Fijados")}</div>
+        ${rows(true)}
+        <div class="ibsec">${tr("Today", "Hoy")}</div>
+        ${rows(false)}
+      </div>
+      <div class="ibthread">
+        <div class="ibhead">
+          ${favatar(sel.name, 34)}
+          <div><b>${esc(sel.name)}</b><span>${esc(sel.role)} · ${esc(sel.ch)}</span></div>
+          <span class="chip gray" style="margin-left:auto">SAMPLE</span>
+        </div>
+        <div class="ibmsgs">${msgs}</div>
+        <div class="ibcomposer">
+          <div class="ibtabs"><b>${tr("Reply", "Responder")}</b><span>${tr("Internal note", "Nota interna")}</span></div>
+          <textarea class="input" id="ib-draft" rows="2" placeholder="${tr("Type your message...", "Escribe tu mensaje...")}"></textarea>
+          <div class="ibtools">
+            <span class="hint">${tr("Sends from City Zero's own account", "Sale de la cuenta propia de City Zero")} · ${esc(sel.ch)}</span>
+            <button class="btn" onclick="ibSend('${sel.id}')">${tr("Send", "Enviar")}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  ${demoNote()}`;
+}
+function ibSend(id) {
+  const el = document.getElementById("ib-draft");
+  const txt = (el?.value || "").trim();
+  if (!txt) return;
+  const c = DATA.inbox.convos.find(x => x.id === id);
+  c.thread.push({ who: "us", t: tr("now", "ahora"), txt });
+  c.unread = 0;
+  toast(tr("Reply sent", "Respuesta enviada"), tr("Queued on the channel's own account (demo).", "En cola en la cuenta propia del canal (demo)."));
+  render();
 }
 
 /* filter the class calendar: matching blocks stay, the rest dim out */
@@ -1396,13 +1467,25 @@ function vPipeline() {
   });
   const breaches = p.cards.filter(c => c.breach).length;
   const cols = p.stages.map(st => {
-    const cards = p.cards.filter(c => c.stage === st.key).map(c => `
+    const cards = p.cards.filter(c => c.stage === st.key).map(c => {
+      const h = _mhash(c.name);
+      const pri = c.breach ? ["High", "red"] : (c.days <= 1 ? ["High", "red"] : c.days <= 4 ? ["Medium", "amber"] : ["Low", "gray"]);
+      const prog = Math.min(96, 18 + (h % 60) + (["new", "contacted", "tour", "trial", "member"].indexOf(c.stage) + 1) * 12);
+      return `
       <div class="kcard click${c.breach ? " breach" : ""}" onclick="openLead('${c.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open lead: notes, status, sequences", "Abrir lead: notas, estado, secuencias")}">
-        <div class="kname"><span class="avatar sm">${esc(c.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>${esc(c.name)}</div>
+        <div class="ktop"><div class="kname"><span class="avatar sm">${esc(c.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>${esc(c.name)}</div><span class="chip ${pri[1]}" style="font-size:9px;padding:1px 7px">${pri[0]}</span></div>
+        <div class="kprog"><div class="kpl"><span>${tr("Progress", "Progreso")}</span><b class="mono">${prog}%</b></div><div class="kptrack"><i style="width:${prog}%"></i></div></div>
         <div class="ksrc">${esc(c.source)}${c.landing ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">LIVE</span>' : ""}${c.paid ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">PULSE</span>' : ""}</div>
         <div class="knext${c.breach ? " bad" : ""}">${esc(c.next)}</div>
-        <div class="kmeta"><span>${esc(c.owner)}</span><span style="display:inline-flex;align-items:center;gap:8px"><span class="mono">${c.days}d</span>${c.stage !== "member" ? `<button class="btn ghost xs" style="height:20px;padding:0 6px" data-tip="Advance to next stage" onclick="event.stopPropagation();advanceLead('${c.name.replace(/'/g, "\\'")}')">${I.chevR.replace("<svg", "<svg style='width:12px;height:12px'")}</button>` : ""}</span></div>
-      </div>`).join("");
+        <div class="krow"><span>${tr("Owner", "Dueño")}</span><b>${esc(c.owner)}</b></div>
+        <div class="krow"><span>${tr("In stage", "En etapa")}</span><b class="mono">${c.days}d</b></div>
+        <div class="kfoot">
+          <span class="kct">${I.checkmsg ? I.checkmsg.replace("<svg", "<svg class='kico'") : ""}<b class="mono">${1 + h % 9}</b></span>
+          <span class="kct">${I.mail ? I.mail.replace("<svg", "<svg class='kico'") : ""}<b class="mono">${h % 4}</b></span>
+          ${c.stage !== "member" ? `<button class="btn ghost xs" style="height:20px;padding:0 6px;margin-left:auto" data-tip="Advance to next stage" onclick="event.stopPropagation();advanceLead('${c.name.replace(/'/g, "\\'")}')">${I.chevR.replace("<svg", "<svg style='width:12px;height:12px'")}</button>` : ""}
+        </div>
+      </div>`;
+    }).join("");
     const n = p.cards.filter(c => c.stage === st.key).length;
     return `<div class="kcol">
       <div class="khead"><span>${esc(st.label)}</span><span class="mono">${n}</span></div>
@@ -2306,7 +2389,7 @@ function vAudit() {
 /* ---------- router ---------- */
 
 const VIEWS = {
-  home: vToday, grow: vGrow, keep: vKeep, engine: vEngine, hours: vHours,
+  home: vToday, grow: vGrow, keep: vKeep, engine: vEngine, hours: vHours, inbox: vInbox,
   start: vStart,
   overview: vOverview, exceptions: vExceptions, surfaces: vSurfaces, routes: vRoutes,
   reviews: vReviews, report: vReport, settings: vSettings,

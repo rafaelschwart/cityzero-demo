@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITY 0 OPS · Login</title>
+<link rel="icon" href="assets/logo-cz-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .lg { display: grid; grid-template-columns: 1fr 1.2fr; min-height: 100dvh; }
+  .lgl { position: relative; overflow: hidden; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  .lgl img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .34; filter: saturate(.4); }
+  .lgl .mark { position: relative; height: 54px; }
+  .lgl h1 { position: relative; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+  .lgl p { position: relative; font-size: 13.5px; color: rgba(255,255,255,.65); }
+  .lgr { background: var(--background); display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .lgbox { width: min(360px, 100%); }
+  .lgbox h2 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .lgbox .sub { font-size: 12.5px; color: var(--muted-foreground); text-align: center; line-height: 1.55; margin-bottom: 26px; }
+  .lgbox label { display: block; font-size: 12px; font-weight: 600; margin: 14px 0 6px; }
+  .lgbox input[type=email], .lgbox input[type=password] {
+    width: 100%; height: 38px; padding: 0 12px; font: inherit; font-size: 13px;
+    background: color-mix(in srgb, var(--foreground) 3%, transparent);
+    border: 1px solid var(--input); border-radius: 8px; color: var(--foreground); outline: 0;
+  }
+  .lgbox input:focus { border-color: var(--ring); }
+  .lgrem { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted-foreground); margin: 14px 0 18px; }
+  .lgbtn { width: 100%; height: 38px; border: 0; border-radius: 8px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .lgbtn.pri { background: var(--primary); color: var(--primary-foreground); }
+  .lgbtn.sec { background: transparent; border: 1px solid var(--border); color: var(--foreground); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .lgfoot { font-size: 11.5px; color: var(--muted-foreground); text-align: center; margin-top: 18px; }
+  .lgfoot b { color: var(--foreground); cursor: pointer; }
+  .lgdemo { font-size: 10.5px; color: var(--muted-foreground); text-align: center; margin-top: 26px; border-top: 1px solid var(--border); padding-top: 12px; }
+  @media (max-width: 860px) { .lg { grid-template-columns: 1fr; } .lgl { min-height: 34dvh; } }
+</style>
+</head>
+<body>
+<div class="lg">
+  <div class="lgl">
+    <img class="bg" src="assets/banner.webp" alt="">
+    <img class="mark" src="assets/logo-cz-mark.png" alt="City Zero" onerror="this.remove()">
+    <h1>CITY 0 OPS</h1>
+    <p>Your gym, one screen. Login to continue.</p>
+  </div>
+  <div class="lgr">
+    <form class="lgbox" onsubmit="event.preventDefault(); location.href='index.html';">
+      <h2>Login</h2>
+      <div class="sub">Welcome back. The floor, the road to 500 and today's decisions are waiting.</div>
+      <label for="em">Email Address</label>
+      <input id="em" type="email" placeholder="you@cityzero.com" autocomplete="username">
+      <label for="pw">Password</label>
+      <input id="pw" type="password" placeholder="········" autocomplete="current-password">
+      <label class="lgrem"><input type="checkbox"> Remember me for 30 days</label>
+      <button class="lgbtn pri" type="submit">Login</button>
+      <button class="lgbtn sec" type="button" onclick="location.href='index.html'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.35 11.1H12v2.9h5.3c-.5 2.5-2.6 3.9-5.3 3.9a5.9 5.9 0 1 1 0-11.8c1.5 0 2.8.5 3.8 1.4l2.2-2.2A9 9 0 1 0 12 21c5.2 0 8.9-3.6 8.9-8.8 0-.4 0-.7-.1-1.1z"/></svg>
+        Continue with Google
+      </button>
+      <div class="lgfoot">Don't have an account? <b>Ask your manager</b></div>
+      <div class="lgdemo">DEMO · any credentials enter · access control ships with the real build</div>
+    </form>
+  </div>
+</div>
+</body>
+</html>
