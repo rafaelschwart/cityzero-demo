@@ -786,6 +786,36 @@ const DATA = {
      dollar. All spend numbers are SAMPLE scenario narrative (BRANDBOOK
      allows illustrative story numbers, never claims). Real numbers need ad
      account + Glofox access: Discovery. */
+  /* CITY ZERO STORE · port del dashboard ecommerce del template. CONCEPT:
+     City Zero no tiene tienda pública verificada; esto es el retail layer
+     que Glofox soporta (merch, day passes, shakes), todo SAMPLE. */
+  store: {
+    sample: true,
+    metrics: [
+      { k: "Total Sales", ke: "Ventas totales", v: "$4,820", d: "+15.8%", ds: "vs last month", dse: "vs el mes pasado", good: true, ico: "$" },
+      { k: "Total Orders", ke: "Órdenes totales", v: "214", d: "+8.3%", ds: "vs last month", dse: "vs el mes pasado", good: true, ico: "bag" },
+      { k: "New Buyers", ke: "Compradores nuevos", v: "86", d: "+12.5%", ds: "vs last month", dse: "vs el mes pasado", good: true, ico: "users" },
+      { k: "Average Order", ke: "Orden promedio", v: "$23", d: "-$1.10", ds: "vs last month", dse: "vs el mes pasado", good: false, ico: "receipt" },
+      { k: "Return Requests", ke: "Devoluciones", v: "3", d: "+0.6%", ds: "vs last month", dse: "vs el mes pasado", good: true, ico: "undo" },
+      { k: "Stock Accuracy", ke: "Precisión de stock", v: "97%", d: "+2.4 pts", ds: "vs last audit", dse: "vs la última auditoría", good: true, ico: "box" },
+    ],
+    sources: [
+      { name: "Instagram", n: "5,640", pct: 88, delta: "+18%", good: true, c: "IG" },
+      { name: "Google", n: "3,740", pct: 58, delta: "-6%", good: false, c: "G" },
+      { name: "Glofox portal", n: "2,960", pct: 46, delta: "+7%", good: true, c: "GF" },
+      { name: "Linktree", n: "1,340", pct: 21, delta: "+9%", good: true, c: "LT" },
+      { name: "Walk-in QR", n: "1,080", pct: 17, delta: "-3%", good: false, c: "QR" },
+    ],
+    products: [
+      { name: "Protein shakes · front bar", pct: 31 },
+      { name: "CZ tee + hoodie drop", pct: 24 },
+      { name: "Day passes", pct: 22 },
+      { name: "Gloves, straps, shakers", pct: 14 },
+    ],
+    lowStock: ["CZ tee (M)", "Shaker 700ml"],
+    reviews: { avg: "4.6", count: 138, note: "REAL: Google rating del gimnasio; las reseñas de producto llegan con la tienda." },
+  },
+
   paidmedia: {
     sample: true,
     moat: "Real cost per member = total ad spend \u00f7 new members in Glofox. Meta will not give you that number, Google will not either, and both together will claim more members than actually joined. Pulse exists to compute the real one, on City Zero's side.",

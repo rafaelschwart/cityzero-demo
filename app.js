@@ -49,6 +49,7 @@ const SECTIONS_SIMPLE = [
   { group: "Marketing" },
   { id: "paidmedia", label: "Ads Report" },
   { id: "pulsereport", label: "Monthly Report" },
+  { id: "store", label: "Store" },
   { group: "Under the hood" },
   { id: "engine", label: "The Engine" },
   { group: "Account" },
@@ -80,6 +81,7 @@ const SECTIONS_FULL = [
   { id: "pipeline", label: "Pipeline", badge: () => DATA.pipeline.cards.filter(c => c.breach).length, hot: true },
   { id: "leads", label: "Lead Channels" },
   { id: "campaigns", label: "Campaigns" },
+  { id: "store", label: "Store" },
   { group: "Automation · phase 2" },
   { id: "workflows", label: "Workflows" },
   { id: "triggers", label: "Triggers" },
@@ -102,6 +104,7 @@ const SECTIONS = FULL ? SECTIONS_FULL : SECTIONS_SIMPLE;
 const SECTION_DESC = {
   overview: "The day at a glance: open problems, what broke this morning, live activity and the insights that matter.",
   profile: "The demo account behind this dashboard: read-only access, what it watches, and who sponsors it on the client side.",
+  store: "The retail layer Glofox already supports, as a concept: merch, shakes and day passes with sales, traffic and inventory in one screen. All volumes SAMPLE.",
   exceptions: "Every verified disagreement between City Zero's public surfaces, with the evidence side by side, an age and an owner.",
   surfaces: "The public surfaces the monitor reads every morning, and the hours comparison that started this case.",
   routes: "Every linked route on the site checked daily with its real HTTP status.",
@@ -3221,6 +3224,128 @@ function vPaidMedia() {
   ${demoNote()}`;
 }
 
+/* ---------- CITY ZERO STORE (port de dashboard/ecommerce) ---------- */
+
+function vStore() {
+  const st = DATA.store;
+  const icons = {
+    "$": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+    bag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+    users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    receipt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg>`,
+    undo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>`,
+    box: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
+  };
+  const cells = st.metrics.map(m => `
+    <div class="stcell">
+      <div class="sth">${tr(m.k, m.ke)}<span class="ovic" style="width:28px;height:28px">${icons[m.ico] || icons["$"]}</span></div>
+      <div class="stv">${m.v}</div>
+      <div class="std ${m.good ? "up" : "down"}">${m.d} <span>${tr(m.ds, m.dse)}</span></div>
+    </div>`).join("");
+
+  /* Sales Overview: línea con glow sobre mini-barras (12 meses, pasos semanales) */
+  const n = 48, W = 1000, H = 230;
+  const line = [];
+  for (let i = 0; i < n; i++) {
+    line.push(52 + i * 2.1 + Math.sin(i / 2.1) * 16 + ((i * 13) % 9) * 2.4 - 10);
+  }
+  const lmax = Math.max.apply(null, line) * 1.12;
+  const lpath = line.map((v, i) => (i ? "L" : "M") + (i / (n - 1) * W).toFixed(1) + "," + (H - v / lmax * H).toFixed(1)).join("");
+  const salesBars = Array.from({ length: n }, (_, i) => `<span class="stb" style="height:${14 + ((i * 23) % 34)}%"></span>`).join("");
+  const now = new Date();
+  const mfmt = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", year: "2-digit" });
+  const mLabels = [];
+  for (let i = 11; i >= 0; i--) mLabels.push(mfmt.format(new Date(now.getFullYear(), now.getMonth() - i, 1)).replace(".", ""));
+
+  /* Store Traffic: barras finas 24h + línea roja de anomalías */
+  const tBars = Array.from({ length: 56 }, (_, i) => {
+    let h = 12 + ((i * 31) % 52);
+    if (i % 13 === 0) h += 34;
+    return `<span class="stb thin" style="height:${h}%"></span>`;
+  }).join("");
+  const aPath = Array.from({ length: 56 }, (_, i) => {
+    const y = 212 - (i % 17 === 0 ? 26 + (i * 7) % 20 : ((i * 11) % 8));
+    return (i ? "L" : "M") + (i / 55 * W).toFixed(1) + "," + y;
+  }).join("");
+
+  const srcRows = st.sources.map(s => `
+    <div class="stsrc">
+      <div class="stsl"><b>${esc(s.name)}</b><span class="mono">${s.n}</span></div>
+      <div class="stst"><i style="width:${s.pct}%"><span class="stsc mono">${s.c}</span></i></div>
+      <span class="stsd ${s.good ? "up" : "down"} mono">${s.delta}</span>
+    </div>`).join("");
+
+  const prodRows = st.products.map(p => `
+    <div class="stprod"><span>${esc(p.name)}</span>
+      <div class="kptrack" style="flex:1;max-width:160px"><i style="width:${p.pct}%"></i></div>
+      <b class="mono">${p.pct}%</b></div>`).join("");
+
+  const dateStr = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
+  return `
+  ${topbar("City Zero Store", tr("THE RETAIL LAYER GLOFOX ALREADY SUPPORTS: MERCH, SHAKES AND DAY PASSES, MEASURED", "LA CAPA RETAIL QUE GLOFOX YA SOPORTA: MERCH, SHAKES Y DAY PASSES, MEDIDOS"), `<span class="chip amber">PHASE 2 · CONCEPT · SAMPLE DATA</span>`)}
+  <div class="crmhead" style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div><h2>${tr("Store Overview", "Resumen de tienda")}</h2><p>${esc(dateStr.charAt(0).toUpperCase() + dateStr.slice(1))}</p></div>
+    <div class="ccact">
+      <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The concept covers this month','El concepto cubre este mes')); this.selectedIndex=0"><option selected>${tr("This Month", "Este mes")}</option><option>${tr("Last Month", "Mes pasado")}</option></select>
+      <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Channels','Canales'), tr('SAMPLE: per-channel split ships with the real store','SAMPLE: el corte por canal llega con la tienda real')); this.selectedIndex=0"><option selected>${tr("All Channels", "Todos los canales")}</option><option>Front desk</option><option>Online</option></select>
+    </div>
+  </div>
+  <div class="stgrid">
+    <div class="crmcard stcells" style="margin-bottom:0;padding:0">${cells}</div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Sales Overview", "Resumen de ventas")}</div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
+      <div class="stsales">
+        <div class="stbars">${salesBars}</div>
+        <svg class="actsvg glow" viewBox="0 0 1000 230" preserveAspectRatio="none" aria-hidden="true">
+          <path d="${lpath}" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+      <div class="cflowx" style="margin-top:8px">${mLabels.map(m => `<span>${m}</span>`).join("")}</div>
+    </div>
+  </div>
+  <div class="acgrid" style="grid-template-columns:1.4fr 1fr;margin-bottom:14px">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Store Traffic", "Tráfico de la tienda")}</div>
+        <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">12.9K ${tr("visits", "visitas")} <span class="chip gray" style="font-size:9px;padding:1px 6px;vertical-align:2px">SAMPLE</span></div></div>
+        <span class="actleg" style="gap:14px"><span class="actleg"><i style="background:var(--destructive)"></i>${tr("Anomalies", "Anomalías")}</span><span class="actleg dim"><i></i>${tr("Visitors", "Visitantes")}</span></span></div>
+      <div class="sttraffic">
+        <div class="stbars traffic">${tBars}</div>
+        <svg class="actsvg red" viewBox="0 0 1000 230" preserveAspectRatio="none" aria-hidden="true">
+          <path d="${aPath}" fill="none" stroke="var(--destructive)" stroke-opacity=".8" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+      <div class="cflowx" style="margin-top:6px"><span style="text-align:left">${tr("24h ago", "hace 24h")}</span><span style="text-align:right">${tr("now", "ahora")}</span></div>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Traffic Sources", "Fuentes de tráfico")}</div>
+        <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">14.8K ${tr("visits", "visitas")}</div></div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
+      ${srcRows}
+      <p class="ccdesc" style="margin-top:10px">${tr("Channels are the real City Zero surfaces; volumes are SAMPLE.", "Los canales son las superficies reales de City Zero; los volúmenes son SAMPLE.")}</p>
+    </div>
+  </div>
+  <div class="acgrid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Top Products", "Top productos")}</div>
+        <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">73% ${tr("of sales", "de las ventas")}</div></div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
+      ${prodRows}
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Inventory", "Inventario")}</div>
+        <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">61% ${tr("available", "disponible")}</div></div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
+      <div class="progress" style="height:9px;margin:8px 0 14px"><div class="bar" style="width:61%"></div></div>
+      <p class="ccdesc">${tr("Low stock:", "Stock bajo:")} ${st.lowStock.map(x => `<b style="color:var(--amber)">${esc(x)}</b>`).join(" · ")}</p>
+      <p class="ccdesc" style="margin-top:8px">${tr("Counts sync from the POS the day the store goes live.", "Los conteos sincronizan del POS el día que la tienda sale en vivo.")}</p>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Reviews", "Reseñas")}</div>
+        <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">${st.reviews.avg} ${tr("average rating", "de calificación")}</div></div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
+      <div class="strate">${"★".repeat(5)}<span class="mono" style="font-size:12px;color:var(--muted-foreground);margin-left:8px">${st.reviews.count} ${tr("reviews", "reseñas")}</span></div>
+      <p class="ccdesc" style="margin-top:10px"><span class="chip green" style="font-size:9px;padding:1px 6px">REAL</span> ${tr("Google rating of the gym; product reviews arrive with the store.", "Calificación de Google del gimnasio; las reseñas de producto llegan con la tienda.")}</p>
+    </div>
+  </div>
+  ${demoNote()}`;
+}
+
 /* ---------- ANALYTICS ---------- */
 
 function vAnalytics() {
@@ -3363,6 +3488,7 @@ const VIEWS = {
   workflows: vWorkflows, triggers: vTriggers, tasks: vTasks,
   analytics: vAnalytics, pulsereport: vPulseReport, paidmedia: vPaidMedia, meta: vMeta, integrations: vIntegrations, audit: vAudit,
   classes: vClassStats, calendar: vCalendar, access: vAccess, campaigns: vCampaigns, landing: vLanding,
+  store: vStore,
 };
 
 /* banner tematico por seccion (Higgsfield, mismo lenguaje del hero de Today) */

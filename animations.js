@@ -34,7 +34,7 @@ function animatePage() {
   anime.remove(".mcard,.acard,.panel,.metric,.scard,.icard,.kcol,.chartpanel,.donutpanel");
 
   // Section entrance: cards and panels rise in with a 30ms cascade.
-  const blocks = document.querySelectorAll("#content .metric, #content .mcard, #content .acard, #content .panel, #content .scard, #content .chartpanel, #content .donutpanel, #content .kcol, #content .kpicard, #content .crmcard, #content .crmhead, #content .kbbar, #content .kbcol, #content .ltile, #content .ftile, #content .pwow");
+  const blocks = document.querySelectorAll("#content .metric, #content .mcard, #content .acard, #content .panel, #content .scard, #content .chartpanel, #content .donutpanel, #content .kcol, #content .kpicard, #content .crmcard, #content .crmhead, #content .kbbar, #content .kbcol, #content .ltile, #content .ftile, #content .pwow, #content .astile, #content .stcell");
   if (blocks.length) {
     anime({
       targets: blocks, opacity: [0, 1], translateY: [10, 0],
@@ -43,7 +43,7 @@ function animatePage() {
   }
 
   // Row-level cascade inside tables and lists (cheap: first 30 rows).
-  const rows = document.querySelectorAll("#content tbody tr, #content .xlist .row, #content .act, #content .icard, #content .logrow, #content .review, #content .kbtask, #content .ibrow, #content .pfwd, #content .feedrow, #content .crow");
+  const rows = document.querySelectorAll("#content tbody tr, #content .xlist .row, #content .act, #content .icard, #content .logrow, #content .review, #content .kbtask, #content .ibrow, #content .pfwd, #content .feedrow, #content .crow, #content .stsrc, #content .stprod");
   if (rows.length) {
     anime({
       targets: [...rows].slice(0, 30), opacity: [0, 1], translateY: [6, 0],
@@ -52,11 +52,10 @@ function animatePage() {
   }
 
   // Numbers count up in place (metric values, health score, KPI cards).
-  document.querySelectorAll("#content .mval, #content .metric .v, #content .donut-center .dv, #content .kpiv, #content .crailbig, #content .railn, #content .goaln, #content .ltile .lv, #content .ftile .fn").forEach(countUp);
+  document.querySelectorAll("#content .mval, #content .metric .v, #content .donut-center .dv, #content .kpiv, #content .crailbig, #content .railn, #content .goaln, #content .ltile .lv, #content .ftile .fn, #content .stv").forEach(countUp);
 
   // Template chart draw-in (Recharts-style): lines sweep left to right, area fades under them.
-  const act = document.querySelector("#content .actsvg");
-  if (act) {
+  document.querySelectorAll("#content .actsvg").forEach(act => {
     act.querySelectorAll('path[fill="none"]').forEach((p, i) => {
       const len = p.getTotalLength ? p.getTotalLength() : 1400;
       p.setAttribute("stroke-dasharray", len);
@@ -65,8 +64,14 @@ function animatePage() {
     });
     const area = act.querySelector('path[fill^="url"]');
     if (area) anime({ targets: area, opacity: [0, 1], duration: 800, delay: 520, easing: "easeOutQuad" });
-    anime({ targets: "#content .actlegs .actleg", opacity: [0, 1], translateY: [-4, 0], duration: 320, delay: anime.stagger(60, { start: 300 }), easing: "easeOutQuad" });
-  }
+  });
+  anime({ targets: "#content .actlegs .actleg", opacity: [0, 1], translateY: [-4, 0], duration: 320, delay: anime.stagger(60, { start: 300 }), easing: "easeOutQuad" });
+
+  // Store: mini-barras de ventas y tráfico crecen desde la base en cascada.
+  document.querySelectorAll("#content .stb").forEach((b, i) => {
+    b.style.transformOrigin = "center bottom";
+    anime({ targets: b, scaleY: [0, 1], duration: 420, delay: 100 + i * 7, easing: "easeOutQuart" });
+  });
 
   // Lead Flow bars grow from the baseline with a cascade (Recharts bar mount).
   document.querySelectorAll("#content .cfbar").forEach((b, i) => {
