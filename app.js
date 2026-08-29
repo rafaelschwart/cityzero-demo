@@ -254,6 +254,13 @@ const modeChip = () => DATA.live
   ? `<span class="chip green">LIVE-SIM · PIPELINE DATA</span>`
   : `<span class="chip amber">DEMO · SAMPLE DATA</span>`;
 
+/* foto de miembro: retratos AI (assets/members/p0..p9.jpg), mapeados por hash de nombre */
+function memberPhoto(name) { return `assets/members/p${_mhash(name) % 10}.webp`; }
+function favatar(name, size) {
+  const ini = esc(name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase());
+  return `<span class="favatar" style="width:${size}px;height:${size}px"><i>${ini}</i><img src="${memberPhoto(name)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+
 function vToday() {
   const t = DATA.today;
   const floors = t.byFloor.map(f => `
@@ -263,7 +270,14 @@ function vToday() {
       ${f.offline ? `<div class="fwarn">${tr("reader offline", "lector caído")}</div>` : ""}
     </div>`).join("");
   const feed = t.feed.map(r => `
-    <li class="feedrow click" onclick="openMember('${r.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open member profile", "Abrir perfil del miembro")}"><span class="mono ft">${esc(r.t)}</span><b>${esc(r.name)}</b><span class="ffl">${tr("Floor", "Piso")} ${r.floor}</span></li>`).join("");
+    <li class="feedrow click" onclick="openMember('${r.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open member profile", "Abrir perfil del miembro")}"><span class="mono ft">${esc(r.t)}</span>${favatar(r.name, 30)}<b>${esc(r.name)}</b><span class="ffl">${tr("Floor", "Piso")} ${r.floor}</span></li>`).join("");
+  const ig = DATA.ig;
+  const igPosts = ig.top.map(p => `
+    <li class="igrow">
+      <span class="mono igw">${esc(p.when)}</span>
+      <div class="igtxt">${esc(p.text)}</div>
+      <span class="iglk mono">${p.likes} likes</span>
+    </li>`).join("");
   const cls = t.classesToday.map(c => {
     const pct = Math.round(100 * c.booked / c.cap);
     return `
@@ -282,7 +296,17 @@ function vToday() {
       <span class="dact">${esc(d.act)}</span>
     </li>`).join("");
   const know = t.know.map(k => `<li>${esc(k)}</li>`).join("");
+  const now = new Date();
+  const dateStr = now.toLocaleDateString(LANG === "es" ? "es-US" : "en-US", { weekday: "long", month: "long", day: "numeric" });
   return `
+  <div class="hero">
+    <img src="assets/banner.webp" alt="" onerror="this.closest('.hero').remove()">
+    <div class="heroshade"></div>
+    <div class="herotxt">
+      <span class="mono">CITY ZERO · BRICKELL</span>
+      <b>${esc(dateStr)}</b>
+    </div>
+  </div>
   ${topbar("Today", tr("YOUR GYM, LIVE: EVERY BADGE, EVERY FLOOR, EVERY CLASS, AS IT HAPPENS.", "TU GIMNASIO, EN VIVO: CADA ENTRADA, CADA PISO, CADA CLASE, MIENTRAS PASA."), modeChip())}
   <div class="livetiles">
     <div class="ltile">
@@ -295,17 +319,30 @@ function vToday() {
     </div>
     ${floors}
   </div>
-  <div class="grid">
+  <div class="grid half">
     <div class="panel">
       <div class="ptitle">${tr("Walking in right now", "Entrando ahora mismo")} <span class="hint">${tr("the front door, live", "la puerta, en vivo")}</span></div>
       <ul class="feed" id="livefeed">${feed}</ul>
     </div>
-    <div class="panel">
-      <div class="ptitle">${tr("Today's classes", "Las clases de hoy")} <span class="hint">${tr("fill and waitlists as they stand", "ocupación y waitlists al momento")}</span></div>
-      <ul class="clslist">${cls}</ul>
+    <div class="vstack">
+      <div class="panel">
+        <div class="ptitle">${tr("Today's classes", "Las clases de hoy")} <span class="hint">${tr("fill and waitlists as they stand", "ocupación y waitlists al momento")}</span></div>
+        <ul class="clslist">${cls}</ul>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Instagram <span class="chip green" style="margin-left:6px">REAL</span>
+          <span class="hint">${tr("captured", "capturado")} ${esc(ig.captured)} · ${esc(ig.handle)}</span></div>
+        <div class="igstats">
+          <div class="igstat"><b class="mono">${ig.followers.toLocaleString()}</b><span>${tr("followers", "seguidores")}</span></div>
+          <div class="igstat"><b class="mono">${ig.postsCount}</b><span>posts</span></div>
+          <div class="igstat"><b class="mono">0</b><span>${tr("paid ads behind them", "ads pagados detrás")}</span></div>
+        </div>
+        <ul class="iglist">${igPosts}</ul>
+        <div class="iginsight">${esc(ig.insight)}</div>
+      </div>
     </div>
   </div>
-  <div class="grid">
+  <div class="grid half">
     <div class="panel">
       <div class="ptitle">${tr("Do now", "Hacer ahora")} <span class="hint">${tr("each one acts in the system you already use", "cada una se ejecuta en el sistema que ya usas")}</span></div>
       <ul class="dlist">${dos}</ul>
@@ -606,7 +643,7 @@ function startFeedTicker() {
     const li = document.createElement("li");
     li.className = "feedrow feedin click";
     li.onclick = () => openMember(name);
-    li.innerHTML = `<span class="mono ft">${t}</span><b>${esc(name)}</b><span class="ffl">${tr("Floor", "Piso")} ${fl}</span>`;
+    li.innerHTML = `<span class="mono ft">${t}</span>${favatar(name, 30)}<b>${esc(name)}</b><span class="ffl">${tr("Floor", "Piso")} ${fl}</span>`;
     list.prepend(li);
     while (list.children.length > 12) list.lastChild.remove();
     DATA.today.todayTotal += 1;

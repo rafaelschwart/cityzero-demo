@@ -65,6 +65,19 @@ const DATA = {
     ],
   },
 
+  /* Instagram real: perfil + posts capturados con Apify el 20.08.2026 (research/raw/) */
+  ig: {
+    real: true, captured: "Aug 20",
+    handle: "@cityzeromiami", followers: 110999, postsCount: 275,
+    top: [
+      { when: "Jun 11", likes: 152, comments: 12, text: "Meet @andreinacarvo, our Pilates Sculpt instructor at City Zero" },
+      { when: "Aug 1", likes: 131, comments: 0, text: "BADDIE BOOTCAMP + dance party with Austin Jackson" },
+      { when: "Jul 2", likes: 103, comments: 8, text: "Have you spotted our new equipment on the 4th floor yet?" },
+      { when: "Jul 24", likes: 58, comments: 2, text: "FREE Friend Fridays are here. Buy 1, Get 1 day passes" },
+    ],
+    insight: "110,999 followers with zero paid amplification behind them. The audience already exists; the system's job is turning it into tours.",
+  },
+
   /* heatmap de accesos (Hours view). OJO: la clave NO puede llamarse "hours":
      ya existe DATA.hours (el array del monitor, sitio vs Google) mas abajo. */
   heatmap: {

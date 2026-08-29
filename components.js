@@ -88,7 +88,7 @@ function openMember(name) {
   openDialog(`
     <div class="mprof">
       <div class="mphead">
-        <div class="mphoto"><span>${esc(initials)}</span></div>
+        <div class="mphoto"><span>${esc(initials)}</span><img src="assets/members/p${_mhash(name) % 10}.webp" alt="" onerror="this.remove()"></div>
         <div class="mpid">
           <h2>${esc(p.name)}</h2>
           <div class="mpchips">${statusChip}${payChip}<span class="chip gray">SAMPLE</span></div>
@@ -110,7 +110,7 @@ function openMember(name) {
         ${p.payment === "failed" ? `<button class="btn" onclick="toast(tr('Payment link sent', 'Link de pago enviado'), '')">${tr("Send payment link", "Enviar link de pago")}</button>` : ""}
         ${p.status === "at risk" ? `<button class="btn ghost" onclick="toast(tr('Win-back call logged', 'Llamada de rescate registrada'), '')">${tr("Log win-back call", "Registrar llamada")}</button>` : ""}
       </div>
-      <div class="mpfoot">${tr("Profile photo and full history sync from their Glofox member record the day credentials exist.", "La foto y el historial completo se sincronizan del registro Glofox del miembro el día que existan credenciales.")}</div>
+      <div class="mpfoot">${tr("Sample photo: an AI-generated stand-in, not a real person. Real photos and full history sync from their Glofox member record the day credentials exist.", "Foto de muestra: generada con AI, no es una persona real. Las fotos reales y el historial completo se sincronizan del registro Glofox el día que existan credenciales.")}</div>
     </div>`);
 }
 
