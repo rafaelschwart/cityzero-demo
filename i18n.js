@@ -3,14 +3,16 @@
    strings (exact map + regex list for dynamic strings), plus tr() for
    strings created at runtime (toasts, dialogs). Persisted in localStorage. */
 
-/* Puerta de login del demo: sin sesión (c0.auth) el dashboard redirige a
-   login.html (cualquier credencial entra; el hash pendiente se conserva).
-   QA/deep-links: ?auth=1 abre sesión directo, ?auth=0 la cierra. */
+/* Puerta de login del demo: CADA carga del dashboard exige pasar por
+   login.html (flag one-shot c0.once que el login siembra y esto consume,
+   así el refresh siempre vuelve al login). El hash pendiente se conserva.
+   QA/headless: ?auth=1 entra directo. */
 (function () {
   const q = new URLSearchParams(location.search);
-  if (q.get("auth") === "0") localStorage.removeItem("c0.auth");
-  if (q.get("auth") === "1") localStorage.setItem("c0.auth", "1");
-  if (!localStorage.getItem("c0.auth")) {
+  if (q.get("auth") === "1") return;
+  let ok = false;
+  try { ok = sessionStorage.getItem("c0.once") === "1"; sessionStorage.removeItem("c0.once"); } catch (e) { }
+  if (!ok) {
     try { sessionStorage.setItem("c0.after", location.hash || ""); } catch (e) { }
     location.replace("login.html");
   }
