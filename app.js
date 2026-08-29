@@ -2467,7 +2467,7 @@ function vClassStats() {
         <i class="gbar b3" style="height:${Math.max(4, Math.round(g.open / gmax * 100))}%"></i>
         <i class="gbar bd" style="height:${Math.max(4, Math.round(g.wait / gmax * 100))}%"></i>
       </div>
-      <span>${g.abbr}</span>
+      <span>${esc(g.name)}</span>
     </div>`).join("");
   const gLegend = `
     <div class="gleg">
