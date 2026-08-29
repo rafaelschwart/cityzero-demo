@@ -5,6 +5,20 @@
 
 let LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("c0.lang") || "en";
 
+/* tema dual (template next-shadcn-admin-dashboard-v1): dark = default de marca */
+let THEME = new URLSearchParams(location.search).get("theme") || localStorage.getItem("c0.theme") || "dark";
+if (THEME !== "light") THEME = "dark";
+document.documentElement.classList.toggle("dark", THEME === "dark");
+document.addEventListener("DOMContentLoaded", () =>
+  document.querySelectorAll(".thbtn").forEach(b => b.classList.toggle("on", b.dataset.t === THEME)));
+function setTheme(t) {
+  THEME = t === "light" ? "light" : "dark";
+  localStorage.setItem("c0.theme", THEME);
+  document.documentElement.classList.toggle("dark", THEME === "dark");
+  document.querySelectorAll(".thbtn").forEach(b => b.classList.toggle("on", b.dataset.t === THEME));
+  if (typeof render === "function") render();
+}
+
 function tr(en, es) { return LANG === "es" ? es : en; }
 
 function setLang(l) {

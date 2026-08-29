@@ -264,6 +264,7 @@ function cmdkItems() {
     ...modeToggle,
     { group: tr("Actions", "Acciones"), label: tr("Run sweep now", "Correr barrido"), icon: I.sweep, run: () => runSweepDemo() },
     { group: tr("Actions", "Acciones"), label: tr("Toggle language (EN/ES)", "Cambiar idioma (EN/ES)"), icon: I.chevR, run: () => setLang(LANG === "en" ? "es" : "en") },
+    { group: tr("Actions", "Acciones"), label: THEME === "dark" ? tr("Light mode", "Modo claro") : tr("Dark mode", "Modo oscuro"), icon: I.chevR, run: () => setTheme(THEME === "dark" ? "light" : "dark") },
     { group: tr("Actions", "Acciones"), label: tr("Export morning report", "Exportar reporte matutino"), icon: I.download, run: () => exportReport() },
     { group: tr("Actions", "Acciones"), label: tr("Assign owner to EX-001", "Asignar dueño a EX-001"), icon: I.userplus, run: () => assignOwnerDialog("EX-001") },
   ];

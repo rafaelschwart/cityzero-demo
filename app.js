@@ -450,7 +450,7 @@ function aiPanel(g) {
         <div class="ailt">${tr("A system that learns this gym", "Un sistema que aprende este gimnasio")}</div>
         <div class="ailconf"><span class="mono">${conf}%</span><span>${tr("recommendation confidence", "confianza de recomendación")}</span></div>
         <svg class="aispark" viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true">
-          <polyline points="${pts}" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="${pts}" fill="none" stroke="var(--live)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div class="aill">${tr("4 weeks of learning on the SAMPLE world", "4 semanas de aprendizaje sobre el mundo SAMPLE")}</div>
         <div class="ailrow"><b>${tr("Signals ingested", "Señales ingeridas")}</b><span>${esc(ai.learn.signals)}</span></div>
@@ -515,12 +515,12 @@ function vKeep() {
 function heatColor(v, max) {
   const r = max ? v / max : 0;
   if (r <= 0.02) return "transparent";
-  if (r < 0.35) return `color-mix(in srgb, #4ade80 ${Math.round(20 + (r / 0.35) * 45)}%, transparent)`;
-  if (r < 0.6) return `color-mix(in srgb, #facc15 ${Math.round(38 + ((r - 0.35) / 0.25) * 34)}%, transparent)`;
-  if (r < 0.82) return `color-mix(in srgb, #fb923c ${Math.round(48 + ((r - 0.6) / 0.22) * 30)}%, transparent)`;
-  return `color-mix(in srgb, #ef4444 ${Math.round(58 + ((r - 0.82) / 0.18) * 32)}%, transparent)`;
+  if (r < 0.35) return `color-mix(in srgb, var(--live) ${Math.round(20 + (r / 0.35) * 45)}%, transparent)`;
+  if (r < 0.6) return `color-mix(in srgb, var(--warnY, #eab308) ${Math.round(38 + ((r - 0.35) / 0.25) * 34)}%, transparent)`;
+  if (r < 0.82) return `color-mix(in srgb, var(--warnO, #f97316) ${Math.round(48 + ((r - 0.6) / 0.22) * 30)}%, transparent)`;
+  return `color-mix(in srgb, var(--red) ${Math.round(58 + ((r - 0.82) / 0.18) * 32)}%, transparent)`;
 }
-const heatBand = r => r < 0.35 ? "#4ade80" : r < 0.6 ? "#facc15" : r < 0.82 ? "#fb923c" : "#ef4444";
+const heatBand = r => r < 0.35 ? "var(--live)" : r < 0.6 ? "var(--warnY, #eab308)" : r < 0.82 ? "var(--warnO, #f97316)" : "var(--red)";
 
 /* The hours heatmap: the week's temperature, straight from the door events. */
 function vHours() {
