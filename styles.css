@@ -1819,3 +1819,14 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .stprod > span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .strate { font-size: 20px; letter-spacing: 3px; color: var(--foreground); }
 @media (max-width: 1150px) { .stgrid { grid-template-columns: 1fr; } }
+
+/* creatives grid del Ads Report */
+.crgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.crcard { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: color-mix(in oklab, var(--card) 60%, var(--background)); }
+.crcard img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.crb { padding: 10px 12px 12px; }
+.crt { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.crt b { font-size: 13px; font-weight: 500; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crm { display: flex; gap: 12px; margin-top: 7px; font-size: 11px; color: var(--muted-foreground); flex-wrap: wrap; }
+.chip.red { color: var(--red); border-color: color-mix(in oklab, var(--red) 40%, transparent); background: color-mix(in oklab, var(--red) 10%, transparent); }
+@media (max-width: 1100px) { .crgrid { grid-template-columns: 1fr 1fr; } }
