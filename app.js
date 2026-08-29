@@ -299,6 +299,7 @@ function ovChart() {
   const line = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join("");
   const area = line + `L${W},${H}L0,${H}Z`;
   const bline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + (H - (H - c[1]) * 0.32).toFixed(1)).join("");
+  const nline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + (H - 12 - ((i * 13) % 7)).toFixed(1)).join("");
   const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
   const labels = [];
   for (let i = 0; i < days; i += 11) labels.push(lf.format(pts[i].d));
@@ -412,21 +413,28 @@ function vToday() {
         <div class="ccdesc">${tr("Door check-ins for the last 3 months", "Check-ins de puerta de los últimos 3 meses")} · <span class="chip gray" style="font-size:9px;padding:1px 6px">SAMPLE ${tr("curve", "curva")}</span></div>
       </div>
       <div class="ccact">
-        <span class="actleg"><i></i>${tr("Check-ins", "Check-ins")}</span>
-        <span class="actleg dim"><i></i>${tr("Class bookings", "Reservas de clase")}</span>
         <select class="select" style="height:30px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The sample dataset covers 3 months','El dataset sample cubre 3 meses')); this.selectedIndex=0">
           <option selected>${tr("3 months", "3 meses")}</option><option>${tr("30 days", "30 días")}</option><option>${tr("7 days", "7 días")}</option>
+        </select>
+        <select class="select" style="height:30px;width:auto;font-size:12.5px" onchange="toast(tr('Floors','Pisos'), tr('SAMPLE: per-floor split needs the BioStar door map','SAMPLE: el corte por piso requiere el mapa de puertas BioStar')); this.selectedIndex=0">
+          <option selected>${tr("All floors", "Todos los pisos")}</option><option>${tr("Floor 1 · Main", "Piso 1 · Principal")}</option><option>${tr("Floor 2 · Studio", "Piso 2 · Studio")}</option><option>${tr("Floor 3 · Weights", "Piso 3 · Pesas")}</option><option>${tr("Floor 4 · Rooftop", "Piso 4 · Rooftop")}</option>
         </select>
         <button class="btn outline sm" onclick="location.hash='${FULL ? "#report" : "#pulsereport"}'">${tr("View report", "Ver reporte")}</button>
       </div>
     </div>
     <div class="actwrap">
+      <div class="actlegs">
+        <span class="actleg"><i></i>${tr("Check-ins", "Check-ins")}</span>
+        <span class="actleg dim"><i></i>${tr("Class bookings", "Reservas de clase")}</span>
+        <span class="actleg dim"><i></i>${tr("New members", "Altas")}</span>
+      </div>
       <svg class="actsvg" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="currentColor" stop-opacity=".13"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+          <stop offset="0" stop-color="currentColor" stop-opacity=".2"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/>
         </linearGradient></defs>
         <path d="${c.area}" fill="url(#ovg)"/>
-        <path d="${c.bline}" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-width="1" vector-effect="non-scaling-stroke"/>
+        <path d="${c.bline}" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1" vector-effect="non-scaling-stroke"/>
+        <path d="${c.nline}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="1" vector-effect="non-scaling-stroke"/>
         <path d="${c.line}" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
       </svg>
       <div class="actx">${c.labels.map(l => `<span>${l}</span>`).join("")}</div>

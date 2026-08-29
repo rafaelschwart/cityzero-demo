@@ -1599,3 +1599,6 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .avmenu button svg { width: 14px; height: 14px; color: var(--muted-foreground); }
 .avmenu hr { border: 0; border-top: 1px solid var(--border); margin: 5px 0; }
 @media (max-width: 980px) { .pfgrid { grid-template-columns: 1fr; } .pfwdgrid { grid-template-columns: repeat(2, 1fr); } }
+.actwrap { position: relative; padding-top: 26px; }
+.actlegs { position: absolute; top: 0; right: 4px; display: flex; gap: 16px; }
+.actsvg { height: 300px; }
