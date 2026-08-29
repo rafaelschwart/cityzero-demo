@@ -418,7 +418,7 @@ function vKeep() {
 
 /* The hours heatmap: the week's temperature, straight from the door events. */
 function vHours() {
-  const H = DATA.hours;
+  const H = DATA.heatmap;
   const nH = H.to - H.from + 1;
   const hourLabels = [];
   for (let h = H.from; h <= H.to; h++) hourLabels.push(h % 3 === 0 ? `${h % 12 || 12}${h < 12 ? "a" : "p"}` : "");
@@ -1512,7 +1512,7 @@ function vClasses() {
     const capBy = {}, coachBy = {}, slotBy = {};
     C.list.forEach(c => { capBy[c.name] = c.cap; coachBy[c.name] = c.coach; });
     C.grid.forEach(g => { slotBy[g.cls] = g; });
-    week = DATA.hours.classes.map(m => ({
+    week = DATA.heatmap.classes.map(m => ({
       d: m.d, h: m.h, name: m.name, coach: coachBy[m.name] || "Team",
       cap: capBy[m.name] || 20, booked: (slotBy[m.name]?.slots || [])[m.d] ?? 0,
       wait: (slotBy[m.name]?.wait || [])[m.d] || 0,

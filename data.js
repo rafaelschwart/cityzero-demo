@@ -65,7 +65,9 @@ const DATA = {
     ],
   },
 
-  hours: {
+  /* heatmap de accesos (Hours view). OJO: la clave NO puede llamarse "hours":
+     ya existe DATA.hours (el array del monitor, sitio vs Google) mas abajo. */
+  heatmap: {
     sample: true,
     from: 5, to: 22, max: 17,
     days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],

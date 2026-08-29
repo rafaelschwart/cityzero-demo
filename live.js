@@ -25,7 +25,7 @@
       if (state.today) Object.assign(DATA.today, state.today);
       if (state.grow) Object.assign(DATA.grow, state.grow);
       if (state.keep) Object.assign(DATA.keep, state.keep);
-      if (state.hours) Object.assign(DATA.hours, state.hours);
+      if (state.hours) Object.assign(DATA.heatmap, state.hours);
       DATA.live = true;
       DATA.gymos = { meta: state.meta, answers: state.answers, exceptionsOps: state.exceptions_ops };
 
