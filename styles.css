@@ -43,6 +43,7 @@
   --live: #16a34a;
   --warnY: #ca8a04;
   --warnO: #ea580c;
+  --mint: #0f9d7a;
 
   --font: "Heebo", ui-sans-serif, system-ui, sans-serif;
   --mono: "Roboto Mono", ui-monospace, monospace;
@@ -81,6 +82,7 @@
   --live: #4ade80;
   --warnY: #facc15;
   --warnO: #fb923c;
+  --mint: #23E3A4;
 
   --shadow-xs: 0 1px 2px 0 rgba(0,0,0,.25);
   --shadow-sm: 0 1px 3px 0 rgba(0,0,0,.3), 0 1px 2px -1px rgba(0,0,0,.3);
@@ -960,6 +962,8 @@ html.dark .ltile, html.dark .ftile { background: var(--card); }
 .herotxt .mono { font-size: 10.5px; letter-spacing: .22em; color: rgba(255,255,255,.75); }
 .herotxt b { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; text-transform: capitalize; color: #fff; }
 @media (max-width: 640px) { .hero { height: 104px; } .herotxt { left: 16px; } }
+.hero.sec { height: 112px; }
+.hero.sec .herotxt b { font-size: 17px; }
 
 /* ---------- fotos de miembros (AI sample) ---------- */
 .favatar {
@@ -984,6 +988,44 @@ html.dark .ltile, html.dark .ftile { background: var(--card); }
 .igrow .igtxt { flex: 1; min-width: 0; font-size: 12px; line-height: 1.5; color: var(--foreground); }
 .igrow .iglk { flex: 0 0 auto; font-size: 10.5px; color: var(--muted-foreground); }
 .iginsight { font-size: 11.5px; color: var(--muted-foreground); line-height: 1.55; border-top: 1px solid var(--border); padding-top: 9px; margin-top: 2px; }
+
+/* ---------- Pulse wow band ---------- */
+.pwow { border-color: color-mix(in srgb, var(--mint) 30%, transparent) !important; }
+.pwgrid { display: grid; grid-template-columns: 200px 1.4fr 1fr; gap: 26px; align-items: center; padding: 6px 2px 16px; }
+.pwring { position: relative; text-align: center; }
+.pwring svg { width: 128px; height: 128px; }
+.pwrv { position: absolute; top: 46px; left: 0; right: 0; }
+.pwrv b { font-size: 30px; font-weight: 700; display: block; line-height: 1; }
+.pwrv span { font-size: 8.5px; letter-spacing: .18em; color: var(--muted-foreground); }
+.pwrl { font-size: 10.5px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.4; }
+.pwlab { display: block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 8px; }
+.pwhero b { font-size: 54px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--mint); display: block; }
+.pwhero p { font-size: 12.5px; color: var(--muted-foreground); line-height: 1.6; margin-top: 10px; max-width: 44ch; }
+.pwvs { display: flex; flex-direction: column; gap: 9px; }
+.pwbar { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.pwbar span { font-size: 11px; color: var(--muted-foreground); }
+.pwbar b { font-size: 13px; }
+.pwbar { display: flex; flex-direction: column; }
+.pwtrack { height: 14px; border-radius: 999px; background: color-mix(in srgb, var(--foreground) 7%, transparent); overflow: hidden; }
+.pwtrack i { display: block; height: 100%; border-radius: 999px; }
+.pwbar { position: relative; }
+.pwbar b { position: absolute; right: 0; top: 0; }
+.moneypath {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  border-top: 1px solid var(--border); padding: 16px 2px 4px;
+}
+.moneypath .mpn {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px;
+  display: flex; flex-direction: column; min-width: 92px;
+}
+.moneypath .mpn b { font-size: 19px; font-weight: 700; }
+.moneypath .mpn span { font-size: 10.5px; color: var(--muted-foreground); }
+.moneypath .mpn.hot { border-color: color-mix(in srgb, var(--mint) 55%, transparent); background: color-mix(in srgb, var(--mint) 7%, transparent); }
+.moneypath .mpn.hot b { color: var(--mint); }
+.moneypath .mpa { display: flex; color: var(--muted-foreground); opacity: .6; }
+.moneypath .mpa svg { width: 15px; height: 15px; }
+.pwfoot { font-size: 11.5px; color: var(--muted-foreground); padding: 12px 2px 0; }
+@media (max-width: 980px) { .pwgrid { grid-template-columns: 1fr; gap: 18px; } .pwhero b { font-size: 44px; } }
 
 /* ---------- interactividad: filas/celdas clickeables ---------- */
 .click { cursor: pointer; }

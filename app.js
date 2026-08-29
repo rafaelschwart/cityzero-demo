@@ -1993,8 +1993,47 @@ function vPulseReport() {
       </div>`).join("")}
     </div>`;
 
+  const hs = r.executive_summary.health_score;
+  const ringC = 2 * Math.PI * 34;
   return `
   ${topbar("Pulse Report", `<span class="pulse-mark">● PULSE · METRICS</span> monthly client report · ${esc(r.periodLabel)}`, `<span class="chip amber">MOCKUP · SAMPLE SCENARIO</span>`)}
+
+  <div class="grid"><div class="panel wide pwow">
+    <div class="pwgrid">
+      <div class="pwring">
+        <svg viewBox="0 0 80 80" aria-hidden="true">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="color-mix(in srgb, var(--foreground) 10%, transparent)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="${hs >= 80 ? "var(--green)" : hs >= 60 ? "var(--amber)" : "var(--red)"}" stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="${(ringC * hs / 100).toFixed(1)} ${ringC.toFixed(1)}" transform="rotate(-90 40 40)"/>
+        </svg>
+        <div class="pwrv"><b class="mono">${hs}</b><span>${tr("HEALTH", "SALUD")}</span></div>
+        <div class="pwrl">${tr("of 100 · trending up with the Meta cleanup", "de 100 · subiendo con la limpieza Meta")}</div>
+      </div>
+      <div class="pwhero">
+        <span class="pwlab">${tr("What a member really costs you", "Lo que de verdad te cuesta un miembro")}</span>
+        <b>$158</b>
+        <p>${tr("The ad platforms would have told you $120. The difference is 6 members they claimed but never walked in.", "Las plataformas te habrían dicho $120. La diferencia son 6 miembros que reclamaron y nunca entraron.")}</p>
+      </div>
+      <div class="pwvs">
+        <span class="pwlab">${tr("Platforms claim vs your front door", "Lo que reclaman vs tu puerta")}</span>
+        <div class="pwbar"><span>${tr("Meta + Google claim", "Meta + Google reclaman")}</span><div class="pwtrack"><i style="width:100%;background:color-mix(in srgb, var(--foreground) 30%, transparent)"></i></div><b class="mono">25</b></div>
+        <div class="pwbar"><span>${tr("Real joins in Glofox", "Altas reales en Glofox")}</span><div class="pwtrack"><i style="width:76%;background:var(--mint)"></i></div><b class="mono">19</b></div>
+        <span class="chip red" style="align-self:flex-start">+32% ${tr("over-reported", "inflado")}</span>
+      </div>
+    </div>
+    <div class="moneypath">
+      <div class="mpn"><b class="mono">$3,000</b><span>${tr("ad spend", "inversión")}</span></div>
+      <span class="mpa">${I.chevR}</span>
+      <div class="mpn"><b class="mono">120</b><span>leads</span></div>
+      <span class="mpa">${I.chevR}</span>
+      <div class="mpn"><b class="mono">41</b><span>tours</span></div>
+      <span class="mpa">${I.chevR}</span>
+      <div class="mpn"><b class="mono">19</b><span>${tr("members", "miembros")}</span></div>
+      <span class="mpa">${I.chevR}</span>
+      <div class="mpn hot"><b class="mono">$158</b><span>${tr("per member", "por miembro")}</span></div>
+    </div>
+    <div class="pwfoot">${tr("Every number traced from spend to badge-in. This is the report, not a dashboard to decode.", "Cada número trazado del gasto al check-in. Esto es el reporte, no un dashboard por descifrar.")}</div>
+  </div></div>
 
   <div class="grid"><div class="panel wide" style="border-color:rgba(35,227,164,.25)">
     <div style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start">
@@ -2277,6 +2316,30 @@ const VIEWS = {
   classes: vClasses, access: vAccess, campaigns: vCampaigns, landing: vLanding,
 };
 
+/* banner tematico por seccion (Higgsfield, mismo lenguaje del hero de Today) */
+const SEC_HEROES = {
+  hours: ["When your gym is full, and when it is empty", "Cuándo está lleno, y cuándo vacío"],
+  classes: ["The week, class by class", "La semana, clase por clase"],
+  grow: ["The road to 500 members", "El camino a 500 miembros"],
+  pipeline: ["No lead goes cold", "Ningún lead se enfría"],
+  campaigns: ["Follow-up that runs itself", "Seguimiento que corre solo"],
+  keep: ["Growth you already paid for", "Crecimiento que ya pagaste"],
+  paidmedia: ["Every ad dollar, measured", "Cada dólar de ads, medido"],
+  pulsereport: ["What you receive every month", "Lo que recibes cada mes"],
+  engine: ["Everything running underneath", "Todo lo que corre debajo"],
+};
+function heroFor(id) {
+  const h = SEC_HEROES[id];
+  if (!h) return "";
+  const label = SECTIONS.find(s => s.id === id)?.label || "";
+  return `
+  <div class="hero sec">
+    <img src="assets/banners/${id}.webp" alt="" onerror="this.closest('.hero').remove()">
+    <div class="heroshade"></div>
+    <div class="herotxt"><span class="mono">CITY ZERO · ${esc(label.toUpperCase())}</span><b>${tr(h[0], h[1])}</b></div>
+  </div>`;
+}
+
 function render() {
   let [id, arg] = (location.hash.replace(/^#/, "") || (FULL ? "start" : "home")).split("/");
   if (PUBLIC_DEMO && !SECTIONS.some(s => s.id === id)) id = "home";
@@ -2288,7 +2351,7 @@ function render() {
   }).join("");
   const cs = document.getElementById("crumb-sec");
   if (cs) cs.textContent = (LANG === "es" && typeof T !== "undefined" && T[SECTIONS.find(s => s.id === id)?.label]) || SECTIONS.find(s => s.id === id)?.label || "Today";
-  $("#content").innerHTML = view(arg);
+  $("#content").innerHTML = (id === "home" ? "" : heroFor(id)) + view(arg);
   const tb = $("#content .topbar");
   if (tb && SECTION_DESC[id]) tb.insertAdjacentHTML("afterend", `<div class="secdesc">${SECTION_DESC[id]}</div>`);
   if (id === "overview" || !VIEWS[id]) mountOverviewCharts();
