@@ -281,7 +281,7 @@ function vToday() {
   const cls = t.classesToday.map(c => {
     const pct = Math.round(100 * c.booked / c.cap);
     return `
-    <li class="crow ${c.done ? "done" : ""}">
+    <li class="crow click ${c.done ? "done" : ""}" onclick="openClass('${c.name.replace(/'/g, "\\'")}', ${c.booked}, ${c.cap}, ${c.wait || 0})">
       <span class="mono cat">${esc(c.at)}</span>
       <div class="cmid"><b>${esc(c.name)}</b>
         <div class="cbar"><i style="width:${pct}%" class="${pct >= 95 ? "hotbar" : ""}"></i></div>
@@ -1706,7 +1706,8 @@ function vClasses() {
         const pct = Math.round(100 * w.booked / w.cap);
         const tone = pct >= 95 ? "hot" : pct < 55 ? "low" : "";
         const photo = (C.photos || {})[w.name];
-        return `<div class="calblk ${tone}" data-q="${esc((w.name + " " + w.coach).toLowerCase())}"
+        return `<div class="calblk click ${tone}" data-q="${esc((w.name + " " + w.coach).toLowerCase())}"
+          onclick="openClass('${w.name.replace(/'/g, "\\'")}', ${w.booked}, ${w.cap}, ${w.wait || 0})"
           data-tip="${esc(`${w.name} · ${w.coach} · ${w.booked}/${w.cap}${w.wait ? ` · +${w.wait} waitlist` : ""}`)}">
           ${photo ? `<img class="cbimg" src="${photo}" alt="" loading="lazy" onerror="this.remove()">` : ""}
           <div class="cbin">

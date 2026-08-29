@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (t === "sheet") setTimeout(() => window.editDraftSheet && editDraftSheet(0), 400);
   if (t && t.startsWith("member")) setTimeout(() => openMember(decodeURIComponent(t.split(":")[1] || "") || DATA.today.feed[0].name), 500);
   if (t && t.startsWith("lead")) setTimeout(() => openLead(decodeURIComponent(t.split(":")[1] || "") || DATA.pipeline.cards[0].name), 500);
+  if (t && t.startsWith("class")) setTimeout(() => openClass(decodeURIComponent(t.split(":")[1] || "") || "Pilates Sculpt", 16, 20, 0), 500);
 });
 
 function closeLayers() {
@@ -111,6 +112,36 @@ function openMember(name) {
         ${p.status === "at risk" ? `<button class="btn ghost" onclick="toast(tr('Win-back call logged', 'Llamada de rescate registrada'), '')">${tr("Log win-back call", "Registrar llamada")}</button>` : ""}
       </div>
       <div class="mpfoot">${tr("Sample photo: an AI-generated stand-in, not a real person. Real photos and full history sync from their Glofox member record the day credentials exist.", "Foto de muestra: generada con AI, no es una persona real. Las fotos reales y el historial completo se sincronizan del registro Glofox el día que existan credenciales.")}</div>
+    </div>`);
+}
+
+/* ---------- ficha de clase: instructor + agenda ---------- */
+function openClass(name, booked, cap, wait) {
+  const info = (DATA.classes.info || {})[name] || {};
+  const photo = (DATA.classes.photos || {})[name];
+  const agenda = (info.agenda || []).map(a => `
+    <div class="agrow"><span class="mono">${esc(a[0])} min</span><span>${esc(a[1])}</span></div>`).join("");
+  const instIni = (info.inst || "T C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  openDialog(`
+    <div class="clprof">
+      ${photo ? `<div class="clphoto"><img src="${photo}" alt="" onerror="this.closest('.clphoto').remove()"></div>` : ""}
+      <div class="cltitle">
+        <h2>${esc(name)}</h2>
+        <div class="mpchips">
+          ${info.dur ? `<span class="chip gray">${info.dur} min</span>` : ""}
+          ${booked != null ? `<span class="chip ${booked >= cap ? "green" : "gray"}">${booked}/${cap} ${tr("booked", "reservados")}</span>` : ""}
+          ${wait ? `<span class="chip amber">+${wait} ${tr("waitlist", "en espera")}</span>` : ""}
+        </div>
+      </div>
+      <div class="clinst">
+        <span class="favatar" style="width:44px;height:44px"><i>${esc(instIni)}</i>${info.instPhoto ? `<img src="${info.instPhoto}" alt="" onerror="this.remove()">` : ""}</span>
+        <div><b>${esc(info.inst || "Team coach")}</b>
+          <span>${info.real ? tr("Instructor · from City Zero's own public team page", "Instructor · de la página pública del equipo de City Zero") : tr("Coach assignment shown as SAMPLE until Glofox connects", "Asignación de coach SAMPLE hasta conectar Glofox")}</span></div>
+        ${info.real ? '<span class="chip green">REAL</span>' : '<span class="chip gray">SAMPLE</span>'}
+      </div>
+      ${info.desc ? `<p class="cldesc">${esc(info.desc)}</p>` : ""}
+      ${agenda ? `<div class="lsec">${tr("Class agenda", "Agenda de la clase")}</div><div class="agenda">${agenda}</div>` : ""}
+      <div class="mpfoot">${tr("Booking, roster and instructor live in Glofox; this card just reads them.", "Reserva, roster e instructor viven en Glofox; esta ficha solo los lee.")}</div>
     </div>`);
 }
 
