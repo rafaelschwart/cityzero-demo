@@ -263,7 +263,7 @@ function vToday() {
       ${f.offline ? `<div class="fwarn">${tr("reader offline", "lector caído")}</div>` : ""}
     </div>`).join("");
   const feed = t.feed.map(r => `
-    <li class="feedrow"><span class="mono ft">${esc(r.t)}</span><b>${esc(r.name)}</b><span class="ffl">${tr("Floor", "Piso")} ${r.floor}</span></li>`).join("");
+    <li class="feedrow click" onclick="openMember('${r.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open member profile", "Abrir perfil del miembro")}"><span class="mono ft">${esc(r.t)}</span><b>${esc(r.name)}</b><span class="ffl">${tr("Floor", "Piso")} ${r.floor}</span></li>`).join("");
   const cls = t.classesToday.map(c => {
     const pct = Math.round(100 * c.booked / c.cap);
     return `
@@ -352,6 +352,7 @@ function vGrow() {
       </div>
     </div>
   </div></div>
+  ${aiPanel(g)}
   <div class="grid"><div class="panel wide">
     <div class="ptitle">${tr("This month's funnel", "El funnel del mes")} <span class="hint">${tr("trial to member", "de trial a miembro")}: ${g.trialConv}%</span></div>
     <div class="funnel">${funnel}</div>
@@ -373,22 +374,79 @@ function vGrow() {
   ${demoNote()}`;
 }
 
+/* Pulse Intelligence: recomendaciones desde los datos + el loop que aprende
+   de cada accept/dismiss del operador. CONCEPT: entrena con sus numeros reales
+   tras el go-live; aqui el loop es visible y persistente. */
+function aiPanel(g) {
+  const ai = g.ai;
+  if (!ai) return "";
+  const fb = Object.keys(STATE.aiRecs).length;
+  const conf = (ai.learn.conf[ai.learn.conf.length - 1] + fb * 0.3).toFixed(1);
+  const recs = ai.recs.map(r => {
+    const st = STATE.aiRecs[r.t];
+    return `
+    <div class="airec ${st === "accepted" ? "ok" : ""} ${st === "dismissed" ? "off" : ""}">
+      <div class="aitop">
+        <span class="aiconf mono" data-tip="${tr("model confidence", "confianza del modelo")}">${r.conf}%</span>
+        <b>${esc(r.t)}</b>
+        ${st === "accepted" ? `<span class="chip green">${tr("IN THE PLAN", "EN EL PLAN")}</span>` : ""}
+        ${st === "dismissed" ? `<span class="chip gray">${tr("DISMISSED", "DESCARTADA")}</span>` : ""}
+      </div>
+      <p>${esc(r.d)}</p>
+      <div class="aiev">${tr("Based on", "Basado en")}: ${esc(r.ev)}</div>
+      <div class="aibtns">
+        ${st ? `<button class="btn ghost xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', null)">${tr("Undo", "Deshacer")}</button>`
+             : `<button class="btn xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', 'accepted')">${tr("Apply to plan", "Aplicar al plan")}</button>
+                <button class="btn ghost xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', 'dismissed')">${tr("Dismiss", "Descartar")}</button>`}
+      </div>
+    </div>`;
+  }).join("");
+  const pts = ai.learn.conf.map((v, i) => `${8 + i * 34},${40 - (v - 55) * 1.3}`).join(" ");
+  return `
+  <div class="grid"><div class="panel wide">
+    <div class="ptitle">Pulse Intelligence
+      <span class="chip amber" style="margin-left:8px">${tr("CONCEPT · TRAINS ON THEIR DATA AFTER GO-LIVE", "CONCEPT · ENTRENA CON SUS DATOS TRAS EL GO-LIVE")}</span>
+      <span class="hint">${tr("every accept or dismiss below becomes a training signal", "cada aplicar o descartar de abajo se vuelve señal de entrenamiento")}</span></div>
+    <div class="aigrid">
+      <div class="airecs">${recs}</div>
+      <div class="ailearn">
+        <div class="ailt">${tr("A system that learns this gym", "Un sistema que aprende este gimnasio")}</div>
+        <div class="ailconf"><span class="mono">${conf}%</span><span>${tr("recommendation confidence", "confianza de recomendación")}</span></div>
+        <svg class="aispark" viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="${pts}" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="aill">${tr("4 weeks of learning on the SAMPLE world", "4 semanas de aprendizaje sobre el mundo SAMPLE")}</div>
+        <div class="ailrow"><b>${tr("Signals ingested", "Señales ingeridas")}</b><span>${esc(ai.learn.signals)}</span></div>
+        <div class="ailrow"><b>${tr("Your calls woven in", "Tus decisiones tejidas")}</b><span class="mono">${fb}</span></div>
+        <div class="ailrow"><b>${tr("Next retrain", "Próximo reentreno")}</b><span>${esc(ai.learn.retrain)}</span></div>
+      </div>
+    </div>
+  </div></div>`;
+}
+function aiReact(t, v) {
+  if (v) STATE.aiRecs[t] = v; else delete STATE.aiRecs[t];
+  persist();
+  if (v === "accepted") toast(tr("Added to the plan", "Agregada al plan"), tr("Logged as a positive training signal.", "Registrada como señal positiva de entrenamiento."));
+  else if (v === "dismissed") toast(tr("Dismissed", "Descartada"), tr("The model weighs this pattern down next retrain.", "El modelo baja el peso de este patrón en el próximo reentreno."));
+  render();
+}
+
 function vKeep() {
   const k = DATA.keep;
   const rec = k.recovery.map(r => `
-    <li class="drow">
+    <li class="drow click" onclick="openMember('${r.name.replace(/'/g, "\\'")}')">
       <span class="chip amber">$${r.amount}</span>
       <div class="dbody"><b>${esc(r.name)}</b><span>${tr("autopay failed, trained", "autopago falló, entrenó hace")} ${r.days} ${tr("day(s) ago. Expired card, not churn.", "día(s). Tarjeta vencida, no baja.")}</span></div>
       <span class="dact">${tr("Send payment link", "Enviar link de pago")}</span>
     </li>`).join("");
   const save = k.saveList.map(s => `
-    <li class="drow">
+    <li class="drow click" onclick="openMember('${s.name.replace(/'/g, "\\'")}')">
       <span class="chip red">${s.never ? tr("never came", "nunca vino") : `${s.days}d`}</span>
       <div class="dbody"><b>${esc(s.name)}</b><span>${esc(s.plan)} · ${s.never ? tr("paying since day one, zero visits", "paga desde el día uno, cero visitas") : tr("paying, not coming", "paga y no viene")}</span></div>
       <span class="dact">${tr("Win-back call", "Llamada de rescate")}</span>
     </li>`).join("");
   const fv = k.firstVisits.map(f => `
-    <li class="drow">
+    <li class="drow click" onclick="openMember('${f.name.replace(/'/g, "\\'")}')">
       <span class="chip green">${tr("NEW", "NUEVO")}</span>
       <div class="dbody"><b>${esc(f.name)}</b><span>${tr("first check-in", "primer check-in")} ${esc(f.when)}</span></div>
       <span class="dact">${tr("Send welcome text", "Enviar texto de bienvenida")}</span>
@@ -430,7 +488,7 @@ function vHours() {
       const marks = markAt[`${d}-${i + H.from}`];
       const hh = i + H.from;
       const tip = `${day} ${hh % 12 || 12} ${hh < 12 ? "AM" : "PM"} · ${v} ${tr("check-ins avg", "check-ins prom.")}${marks ? " · " + marks.join(", ") : ""}`;
-      return `<div class="hmcell" data-tip="${esc(tip)}" style="background:color-mix(in srgb, #4ade80 ${pct}%, transparent)">${marks ? `<i class="hmdot"></i>` : ""}</div>`;
+      return `<div class="hmcell" id="hm-${d}-${i}" onclick="hourDetail(${d},${i})" data-tip="${esc(tip)}" style="background:color-mix(in srgb, #4ade80 ${pct}%, transparent)">${marks ? `<i class="hmdot"></i>` : ""}</div>`;
     }).join("");
     return `<div class="hmday">${tr(day, ({ Mon: "Lun", Tue: "Mar", Wed: "Mié", Thu: "Jue", Fri: "Vie", Sat: "Sáb", Sun: "Dom" })[day] || day)}</div>${cells}`;
   }).join("");
@@ -458,10 +516,68 @@ function vHours() {
     </div>
   </div></div>
   <div class="grid"><div class="panel wide">
+    <div class="ptitle">${tr("Who is where, hour by hour", "Quién está dónde, hora por hora")}
+      <span class="hint">${tr("click any cell in the map above", "clic en cualquier celda del mapa de arriba")}</span></div>
+    <div id="hourpanel"></div>
+  </div></div>
+  <div class="grid"><div class="panel wide">
     <div class="ptitle">${tr("Three plays hiding in this map", "Tres jugadas escondidas en este mapa")}</div>
     <div class="wgrid three">${cards}</div>
   </div></div>
   ${demoNote()}`;
+}
+
+/* clic en una hora del heatmap: distribución por piso, como un corte del edificio */
+const CLASS_FLOOR = { "Zumba": 2, "Cardio Dance": 2, "Body Fit": 2, "Jiu Jitsu": 2,
+                      "Spin": 3, "Full Body Conditioning": 3 };
+function hourDetail(d, i) {
+  const H = DATA.heatmap;
+  const h = H.from + i;
+  const total = Math.round(H.matrix[d][i]);
+  document.querySelectorAll(".hmcell.selcell").forEach(c => c.classList.remove("selcell"));
+  document.getElementById(`hm-${d}-${i}`)?.classList.add("selcell");
+  const box = document.getElementById("hourpanel");
+  if (!box) return;
+  const marks = (H.classes || []).filter(c => c.d === d && c.h === h);
+  const w = { 1: 40, 2: 15, 3: 30, 4: 15 };
+  if (h <= 9) w[4] += 8;
+  if (h >= 17) { w[2] += 4; w[3] += 5; }
+  marks.forEach(m => { w[CLASS_FLOOR[m.name] || 2] += 16; });
+  const sumW = w[1] + w[2] + w[3] + w[4];
+  const counts = {}; let acc = 0;
+  [1, 2, 3, 4].forEach(f => { counts[f] = Math.round(total * w[f] / sumW); acc += counts[f]; });
+  counts[1] += total - acc;
+  const fname = {};
+  (DATA.today.byFloor || []).forEach(f => { fname[f.floor] = f.name; });
+  const vals = [1, 2, 3, 4].map(f => counts[f]);
+  const maxC = Math.max(...vals, 1), minC = Math.min(...vals);
+  const DAYN = LANG === "es"
+    ? ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+    : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const hlabel = `${DAYN[d]} ${h % 12 || 12} ${h < 12 ? "AM" : "PM"}`;
+  const floors = [4, 3, 2, 1].map(f => {
+    const c = counts[f];
+    const pct = Math.round(100 * c / maxC);
+    const busiest = c === maxC && total > 0, quietest = c === minC && total > 0 && maxC !== minC;
+    const cls = marks.filter(m => (CLASS_FLOOR[m.name] || 2) === f).map(m => `<span class="chip green" style="font-size:9px;padding:1px 6px">${esc(m.name)}</span>`).join(" ");
+    return `<div class="bldrow ${busiest ? "busy" : ""} ${quietest ? "quiet" : ""}">
+      <div class="bln">${tr("Floor", "Piso")} ${f}<span>${esc(fname[f] || "")}</span></div>
+      <div class="blbar"><i style="width:${total ? Math.max(4, pct) : 0}%"></i>${cls}</div>
+      <div class="blc mono">${c}</div>
+      <div class="bltag">${busiest ? tr("busiest", "más lleno") : quietest ? tr("quietest", "más vacío") : ""}</div>
+    </div>`;
+  }).join("");
+  box.innerHTML = `
+    <div class="bldhead"><b>${esc(hlabel)}</b> · ${total} ${tr("people across 4 floors on an average week", "personas en 4 pisos en una semana promedio")}
+      ${total === 0 ? `<span class="hint">${tr("the gym is closed or empty at this hour", "el gimnasio está cerrado o vacío a esta hora")}</span>` : ""}</div>
+    <div class="bld">${floors}</div>
+    <div class="bldfoot">${tr("Split modeled from door weights and the class schedule (SAMPLE); with BioStar live, every badge carries its exact door.", "Distribución modelada con pesos de puerta y el horario de clases (SAMPLE); con BioStar en vivo, cada entrada trae su puerta exacta.")}</div>`;
+}
+function mountHourDetail() {
+  const H = DATA.heatmap;
+  let bd = 0, bi = 0, bv = -1;
+  H.matrix.forEach((row, d) => row.forEach((v, i) => { if (v > bv) { bv = v; bd = d; bi = i; } }));
+  hourDetail(bd, bi);
 }
 
 /* filter the class calendar: matching blocks stay, the rest dim out */
@@ -488,7 +604,8 @@ function startFeedTicker() {
     const fl = floors.length ? floors[Math.floor(Math.random() * floors.length)] : 1;
     const t = new Date().toTimeString().slice(0, 5);
     const li = document.createElement("li");
-    li.className = "feedrow feedin";
+    li.className = "feedrow feedin click";
+    li.onclick = () => openMember(name);
     li.innerHTML = `<span class="mono ft">${t}</span><b>${esc(name)}</b><span class="ffl">${tr("Floor", "Piso")} ${fl}</span>`;
     list.prepend(li);
     while (list.children.length > 12) list.lastChild.remove();
@@ -1217,11 +1334,11 @@ function vPipeline() {
   const breaches = p.cards.filter(c => c.breach).length;
   const cols = p.stages.map(st => {
     const cards = p.cards.filter(c => c.stage === st.key).map(c => `
-      <div class="kcard${c.breach ? " breach" : ""}">
+      <div class="kcard click${c.breach ? " breach" : ""}" onclick="openLead('${c.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open lead: notes, status, sequences", "Abrir lead: notas, estado, secuencias")}">
         <div class="kname"><span class="avatar sm">${esc(c.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>${esc(c.name)}</div>
         <div class="ksrc">${esc(c.source)}${c.landing ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">LIVE</span>' : ""}${c.paid ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">PULSE</span>' : ""}</div>
         <div class="knext${c.breach ? " bad" : ""}">${esc(c.next)}</div>
-        <div class="kmeta"><span>${esc(c.owner)}</span><span style="display:inline-flex;align-items:center;gap:8px"><span class="mono">${c.days}d</span>${c.stage !== "member" ? `<button class="btn ghost xs" style="height:20px;padding:0 6px" data-tip="Advance to next stage" onclick="advanceLead('${c.name.replace(/'/g, "\\'")}')">${I.chevR.replace("<svg", "<svg style='width:12px;height:12px'")}</button>` : ""}</span></div>
+        <div class="kmeta"><span>${esc(c.owner)}</span><span style="display:inline-flex;align-items:center;gap:8px"><span class="mono">${c.days}d</span>${c.stage !== "member" ? `<button class="btn ghost xs" style="height:20px;padding:0 6px" data-tip="Advance to next stage" onclick="event.stopPropagation();advanceLead('${c.name.replace(/'/g, "\\'")}')">${I.chevR.replace("<svg", "<svg style='width:12px;height:12px'")}</button>` : ""}</span></div>
       </div>`).join("");
     const n = p.cards.filter(c => c.stage === st.key).length;
     return `<div class="kcol">
@@ -1599,7 +1716,7 @@ function vAccess() {
     <div style="font-size:11px;color:var(--dim);margin:-2px 0 6px 0">${esc(c.note)}</div>`).join("");
 
   const risk = A.atRisk.map(r => `
-    <tr>
+    <tr class="click" onclick="openMember('${r.name.replace(/'/g, "\\'")}')">
       <td class="t" style="display:flex;align-items:center;gap:10px"><span class="avatar sm">${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>${esc(r.name)}</td>
       <td class="mono">${esc(r.plan)}</td>
       <td class="age-amber">${esc(r.last)}</td>
@@ -1668,12 +1785,28 @@ function vCampaigns(selId) {
       </div>
     </div>`).join("");
 
+  const DETAILK = {
+    trigger: tr("Fires automatically from the systems they already use. No one has to remember anything.", "Se dispara solo desde los sistemas que ya usan. Nadie tiene que acordarse de nada."),
+    email: tr("Sent from City Zero's own account; opens and clicks tracked back to this sequence.", "Sale de la cuenta propia de City Zero; aperturas y clics se atribuyen a esta secuencia."),
+    sms: tr("A short text from the gym's number, with one tap to act.", "Un texto corto desde el número del gym, con un tap para actuar."),
+    wait: tr("A timer running in the engine. The person feels cadence, not spam.", "Un temporizador corriendo en el motor. La persona siente cadencia, no spam."),
+    task: tr("Creates a front-desk task with the member's full context attached.", "Crea una tarea de front desk con todo el contexto del miembro."),
+    branch: tr("Checks the data and exits anyone who already did the thing. Nobody gets chased after saying yes.", "Revisa los datos y saca a quien ya lo hizo. Nadie recibe seguimiento después de decir que sí."),
+    goal: tr("Sequence ends; the result feeds the monthly report.", "La secuencia termina; el resultado alimenta el reporte mensual."),
+  };
   const flow = sel.steps.map((st, i) => `
-    ${i ? '<div class="fedge"></div>' : ""}
-    <div class="fnode ${st.k}">
+    ${i ? `<div class="vedge"><i style="animation-delay:${(i * 0.5).toFixed(1)}s"></i></div>` : ""}
+    <div class="vnode ${st.k} vfin" style="animation-delay:${i * 90}ms" onclick="this.classList.toggle('open')" role="button" tabindex="0"
+      onkeydown="if(event.key==='Enter')this.classList.toggle('open')">
       <span class="fic">${ICONK[st.k] || I.sweep}</span>
-      <span class="fk">${st.k.toUpperCase()}</span>
-      <span class="ft">${esc(st.t)}</span>
+      <div class="vbody">
+        <div class="vhead"><span class="fk">${st.k.toUpperCase()}</span><span class="ft">${esc(st.t)}</span></div>
+        <div class="vdetail">
+          <p>${DETAILK[st.k] || ""}</p>
+          <span class="mono vstat">~${Math.max(sel.stats.converted, Math.round(sel.stats.entered * Math.pow(0.86, i)))} ${tr("people reach this step", "personas llegan a este paso")}</span>
+        </div>
+      </div>
+      <span class="vchev">${I.chevR}</span>
     </div>`).join("");
 
   return `
@@ -1691,8 +1824,8 @@ function vCampaigns(selId) {
         <span class="chip gray">${sel.stats.active} active</span>
         <span class="chip green">${sel.stats.converted} converted · ${sel.stats.rate}</span>
       </div>
-      <div class="flow">${flow}</div>
-      <div class="evnote" style="margin-top:16px">Every step is visible, editable and pausable. A branch exits people the moment the goal is met, so nobody gets a follow-up after they already booked.</div>
+      <div class="vflow">${flow}</div>
+      <div class="evnote" style="margin-top:16px">${tr("Click any step to see what it does. Every step is visible, editable and pausable; a branch exits people the moment the goal is met.", "Clic en cualquier paso para ver qué hace. Cada paso es visible, editable y pausable; un branch saca a la gente en cuanto se cumple la meta.")}</div>
     </div>
   </div>
   ${demoNote()}`;
@@ -2109,6 +2242,7 @@ function render() {
   applyTranslations();
   requestAnimationFrame(() => animatePage());
   if (id === "home") startFeedTicker(); else clearInterval(_feedTimer);
+  if (id === "hours") mountHourDetail();
 }
 
 window.addEventListener("hashchange", render);

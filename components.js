@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (t === "cmdk") setTimeout(openCmdk, 400);
   if (t === "dialog") setTimeout(() => window.assignOwnerDialog && assignOwnerDialog("EX-001"), 400);
   if (t === "sheet") setTimeout(() => window.editDraftSheet && editDraftSheet(0), 400);
+  if (t && t.startsWith("member")) setTimeout(() => openMember(decodeURIComponent(t.split(":")[1] || "") || DATA.today.feed[0].name), 500);
+  if (t && t.startsWith("lead")) setTimeout(() => openLead(decodeURIComponent(t.split(":")[1] || "") || DATA.pipeline.cards[0].name), 500);
 });
 
 function closeLayers() {
@@ -43,6 +45,148 @@ function openSheet(html) {
   s.classList.add("open");
   document.getElementById("ui-overlay").classList.add("open");
   if (typeof applyTranslations === "function") applyTranslations();
+}
+
+/* ---------- member profile (foto + detalles desde la "base de miembros") ----------
+   Perfil determinista sembrado por nombre (SAMPLE); cuando el nombre existe en
+   las listas conocidas (at-risk, recovery, members) esos datos reales del demo
+   pisan lo generado. La foto real llega de Glofox cuando exista acceso. */
+function _mhash(s) { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
+function memberProfile(name) {
+  const h = _mhash(name);
+  const plans = DATA.members.planMix;
+  const plan = plans[h % plans.length].plan;
+  const classes = DATA.classes.list.map(c => c.name);
+  const floors = ["Floor 1 · Main", "Floor 2 · Studio", "Floor 3 · Weights", "Floor 4 · Rooftop"];
+  const freq = 1 + (h % 4);
+  const weeks = Array.from({ length: 8 }, (_, i) => Math.max(0, freq + ((h >> (i * 3)) % 3) - 1));
+  const p = {
+    name, plan, status: "active", payment: "ok",
+    sinceMonths: 3 + (h % 28),
+    perWeek: freq, last: `${(h % 3) + 1} days ago`,
+    fav: classes[h % classes.length], floor: floors[(h >> 4) % 4],
+    weeks, note: null,
+  };
+  const risk = (DATA.keep.saveList || []).find(r => r.name === name) ||
+               (DATA.access.atRisk || []).find(r => r.name === name);
+  if (risk) { p.status = "at risk"; p.last = `${risk.days || parseInt(risk.last) || 14} days ago`; p.plan = risk.plan || p.plan; p.weeks = [3, 3, 2, 2, 1, 1, 0, 0]; p.note = tr("Win-back sequence armed: day-14 email fired.", "Secuencia de rescate armada: email día-14 disparado."); }
+  const rec = (DATA.keep.recovery || []).find(r => r.name === name);
+  if (rec) { p.payment = "failed"; p.note = tr(`Autopay of $${rec.amount} failed; still training. Expired card, not churn.`, `Autopago de $${rec.amount} falló; sigue entrenando. Tarjeta vencida, no baja.`); }
+  const row = (DATA.members.rows || []).find(r => r.name === name);
+  if (row) { p.plan = row.plan; p.status = row.status; if (row.since) p.sinceLabel = row.since; }
+  return p;
+}
+function openMember(name) {
+  const p = memberProfile(name);
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const maxW = Math.max(...p.weeks, 1);
+  const bars = p.weeks.map((v, i) => `<div class="wb" data-tip="${tr("week", "semana")} -${8 - i} · ${v} ${tr("visits", "visitas")}"><i style="height:${Math.max(8, v / maxW * 100)}%"></i></div>`).join("");
+  const statusChip = p.status === "at risk" ? `<span class="chip red">${tr("AT RISK", "EN RIESGO")}</span>`
+    : p.status === "frozen" ? `<span class="chip amber">FROZEN</span>`
+    : `<span class="chip green">${tr("ACTIVE", "ACTIVO")}</span>`;
+  const payChip = p.payment === "failed" ? `<span class="chip amber">${tr("PAYMENT FAILED", "PAGO FALLIDO")}</span>` : "";
+  openDialog(`
+    <div class="mprof">
+      <div class="mphead">
+        <div class="mphoto"><span>${esc(initials)}</span></div>
+        <div class="mpid">
+          <h2>${esc(p.name)}</h2>
+          <div class="mpchips">${statusChip}${payChip}<span class="chip gray">SAMPLE</span></div>
+          <div class="mpplan">${esc(p.plan)}</div>
+        </div>
+      </div>
+      <div class="mpgrid">
+        <div class="mpf"><b>${tr("Member since", "Miembro desde")}</b><span>${p.sinceLabel ? esc(p.sinceLabel) : p.sinceMonths + " " + tr("months", "meses")}</span></div>
+        <div class="mpf"><b>${tr("Visits / week", "Visitas / semana")}</b><span>${p.perWeek}</span></div>
+        <div class="mpf"><b>${tr("Last visit", "Última visita")}</b><span>${esc(p.last)}</span></div>
+        <div class="mpf"><b>${tr("Favorite class", "Clase favorita")}</b><span>${esc(p.fav)}</span></div>
+        <div class="mpf"><b>${tr("Usual floor", "Piso habitual")}</b><span>${esc(p.floor)}</span></div>
+        <div class="mpf"><b>${tr("Payment", "Pago")}</b><span>${p.payment === "ok" ? tr("Up to date", "Al día") : tr("Failed, retrying", "Fallido, reintentando")}</span></div>
+      </div>
+      <div class="mpweeks"><div class="mpwl">${tr("Last 8 weeks", "Últimas 8 semanas")}</div><div class="wbrow">${bars}</div></div>
+      ${p.note ? `<div class="mpnote">${p.note}</div>` : ""}
+      <div class="mpactions">
+        <button class="btn" onclick="toast(tr('Message queued', 'Mensaje en cola'), tr('Sent from City Zero\\'s own account.', 'Sale de la cuenta propia de City Zero.'))">${tr("Send message", "Enviar mensaje")}</button>
+        ${p.payment === "failed" ? `<button class="btn" onclick="toast(tr('Payment link sent', 'Link de pago enviado'), '')">${tr("Send payment link", "Enviar link de pago")}</button>` : ""}
+        ${p.status === "at risk" ? `<button class="btn ghost" onclick="toast(tr('Win-back call logged', 'Llamada de rescate registrada'), '')">${tr("Log win-back call", "Registrar llamada")}</button>` : ""}
+      </div>
+      <div class="mpfoot">${tr("Profile photo and full history sync from their Glofox member record the day credentials exist.", "La foto y el historial completo se sincronizan del registro Glofox del miembro el día que existan credenciales.")}</div>
+    </div>`);
+}
+
+/* ---------- lead card (kanban): seguimiento, notas, status, automatizacion ---------- */
+function openLead(name) {
+  const c = DATA.pipeline.cards.find(x => x.name === name);
+  if (!c) return;
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const notes = (STATE.leadNotes[name] || []);
+  const auto = STATE.leadCampaigns[name] || {};
+  const baseTl = [
+    { t: `${c.days}d`, e: tr("Lead created", "Lead creado") + " · " + c.source },
+    { t: `${Math.max(0, c.days - 1)}d`, e: tr("Assigned to", "Asignado a") + " " + c.owner },
+  ];
+  const tl = [...baseTl.map(x => `<div class="tlrow"><span class="tlt mono">${esc(x.t)}</span><span>${esc(x.e)}</span></div>`),
+              ...notes.map(n => `<div class="tlrow note"><span class="tlt mono">${esc(n.ts)}</span><span>${esc(n.txt)}</span></div>`)].join("");
+  const stageOpts = DATA.pipeline.stages.map(s =>
+    `<option value="${s.key}" ${s.key === c.stage ? "selected" : ""}>${esc(s.label)}</option>`).join("");
+  const seqs = DATA.campaigns.map(cp => `
+    <div class="seqrow">
+      <div><b>${esc(cp.name)}</b><span>${esc(cp.trigger)}</span></div>
+      <button class="switch" role="switch" aria-checked="${auto[cp.id] ? "true" : "false"}"
+        onclick="toggleLeadCampaign('${name.replace(/'/g, "\\'")}', '${cp.id}', this)"><span class="thumb"></span></button>
+    </div>`).join("");
+  openSheet(`
+    <div class="shead">
+      <div class="kname" style="font-size:15px"><span class="avatar">${esc(initials)}</span>${esc(c.name)}</div>
+      <button class="dclose" onclick="closeLayers()" aria-label="Close">${I.x}</button>
+    </div>
+    <div class="sbody leadsheet">
+      <div class="mpchips" style="margin-bottom:14px">
+        <span class="chip gray">${esc(c.source)}</span>
+        ${c.landing ? '<span class="chip green">LIVE</span>' : ""}${c.paid ? '<span class="chip green">PULSE</span>' : ""}
+        ${c.breach ? `<span class="chip red">SLA BREACH</span>` : ""}
+      </div>
+      <div class="lsrow">
+        <label>${tr("Stage", "Etapa")}</label>
+        <select class="input" onchange="setLeadStage('${name.replace(/'/g, "\\'")}', this.value)">${stageOpts}</select>
+      </div>
+      <div class="lsrow"><label>${tr("Owner", "Dueño")}</label><div class="lsval">${esc(c.owner)}</div></div>
+      <div class="lsrow"><label>${tr("Next step", "Próximo paso")}</label><div class="lsval">${esc(c.next)}</div></div>
+      <div class="lsec">${tr("Follow-up timeline", "Línea de seguimiento")}</div>
+      <div class="tl">${tl}</div>
+      <div class="lsec">${tr("Log a note", "Registrar nota")}</div>
+      <textarea class="input" id="lead-note" rows="2" placeholder="${tr("Called, prefers evening tours...", "Llamé, prefiere tours de tarde...")}"></textarea>
+      <button class="btn" style="margin-top:8px" onclick="addLeadNote('${name.replace(/'/g, "\\'")}')">${tr("Save note", "Guardar nota")}</button>
+      <div class="lsec">${tr("Automated sequences", "Secuencias automáticas")}</div>
+      <div class="seqs">${seqs}</div>
+      <div class="mpfoot" style="margin-top:14px">${tr("Everything here persists in the demo. In production it reads and writes Glofox's own lead states and interactions.", "Todo esto persiste en el demo. En producción lee y escribe los estados e interacciones nativos de leads de Glofox.")}</div>
+    </div>`);
+}
+function setLeadStage(name, key) {
+  STATE.stages[name] = key;
+  const c = DATA.pipeline.cards.find(x => x.name === name);
+  if (c) c.stage = key;
+  persist();
+  toast(tr("Stage updated", "Etapa actualizada"), tr("The board reflects it now.", "El tablero ya lo refleja."));
+  openLead(name);
+  if ((location.hash || "").includes("pipeline")) render();
+}
+function addLeadNote(name) {
+  const el = document.getElementById("lead-note");
+  const txt = (el?.value || "").trim();
+  if (!txt) return;
+  (STATE.leadNotes[name] = STATE.leadNotes[name] || []).push({ ts: tr("now", "ahora"), txt });
+  persist();
+  toast(tr("Note saved", "Nota guardada"), "");
+  openLead(name);
+}
+function toggleLeadCampaign(name, cid, el) {
+  const on = toggleSwitch(el);
+  (STATE.leadCampaigns[name] = STATE.leadCampaigns[name] || {})[cid] = on;
+  persist();
+  const cp = DATA.campaigns.find(x => x.id === cid);
+  toast(on ? tr("Enrolled in sequence", "Inscrito en secuencia") : tr("Sequence paused", "Secuencia pausada"),
+        on ? `${cp.name} · ${tr("first touch queued", "primer toque en cola")}` : cp.name);
 }
 
 /* ---------- toast (sonner) ---------- */
@@ -173,12 +317,16 @@ const STATE = {
   dismissed: _SAVED.dismissed || [],    // intelligence card titles
   stages: _SAVED.stages || {},          // lead name -> stage key
   thresholds: _SAVED.thresholds || {},  // threshold index -> value
+  leadNotes: _SAVED.leadNotes || {},    // lead name -> [{ts, txt}]
+  leadCampaigns: _SAVED.leadCampaigns || {}, // lead name -> {campaignId: bool}
+  aiRecs: _SAVED.aiRecs || {},          // rec title -> "accepted" | "dismissed"
 };
 function persist() {
   localStorage.setItem("c0.state", JSON.stringify({
     tasksDone: [...STATE.tasksDone], owners: STATE.owners, surfaceOwners: STATE.surfaceOwners,
     armed: STATE.armed, drafts: STATE.drafts, approved: STATE.approved,
     dismissed: STATE.dismissed, stages: STATE.stages, thresholds: STATE.thresholds,
+    leadNotes: STATE.leadNotes, leadCampaigns: STATE.leadCampaigns, aiRecs: STATE.aiRecs,
   }));
 }
 /* apply persisted state onto DATA at boot */

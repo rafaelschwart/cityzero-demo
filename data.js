@@ -133,6 +133,29 @@ const DATA = {
       { t: "Answer the 2 open Google reviews", d: "4.8 stars with 138 reviews is the best ad they own. An answered review converts the next reader; an ignored one costs tours." },
       { t: "Welcome-text every first visit", d: "5 members had their first check-in this week. A text within 24 hours is the cheapest retention move that exists." },
     ],
+    /* Pulse Intelligence: recomendaciones generadas de los datos + el loop de
+       aprendizaje. CONCEPT: el motor real entrena con sus numeros tras el go-live. */
+    ai: {
+      recs: [
+        { t: "Open Tuesday 6 PM Zumba", conf: 84,
+          d: "Waitlist pressure has held at 6+ for three straight weeks while the room sits empty at that hour.",
+          ev: "3,766 bookings · waitlist history · room schedule" },
+        { t: "Call the 30-day absentees before the 1st", conf: 88,
+          d: "4 members cross 30 days of silence this week; billing on the 1st is when quiet members cancel.",
+          ev: "11,128 check-ins · billing calendar · churn pattern" },
+        { t: "Move Body Fit out of the noon slot", conf: 76,
+          d: "Fill has averaged 51% for four weeks in a band where the gym itself runs at one third of peak.",
+          ev: "class fills · hourly access curve" },
+        { t: "Aim tour slots at 5-7 PM", conf: 81,
+          d: "Tours booked inside the gym's busiest window convert 1.6x: the floor sells itself when it is full.",
+          ev: "40 leads · tour outcomes · occupancy" },
+      ],
+      learn: {
+        conf: [62, 68, 74, 79],
+        signals: "11,128 check-ins · 3,766 bookings · 40 leads · 1,569 payments",
+        retrain: "Sunday 2:00 AM",
+      },
+    },
   },
 
   keep: {
