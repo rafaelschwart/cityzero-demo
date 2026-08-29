@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITY 0 OPS · Public Surface Monitor</title>
+<link rel="icon" href="assets/logo-cz-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="wordmark">
+      <img src="assets/logo-horizontal-white.png" alt="City Zero">
+      <span class="ops">OPS</span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div style="margin-top:auto"></div>
+    <div class="side-status" id="side-status"></div>
+    <div class="langrow" role="group" aria-label="Language">
+      <button class="langbtn" data-l="en" onclick="setLang('en')">EN</button>
+      <button class="langbtn" data-l="es" onclick="setLang('es')">ES</button>
+    </div>
+    <div class="side-foot" style="margin-top:0">
+      <strong>Read-only monitor</strong>
+      No write access to any<br>City Zero system.<br><br>
+      Arqentia · Phase 1 demo
+    </div>
+  </aside>
+
+  <main class="content" id="content"></main>
+
+</div>
+<script src="data.js"></script>
+<script src="i18n.js"></script>
+<script src="vendor/anime.min.js"></script>
+<script src="charts.js"></script>
+<script src="animations.js"></script>
+<script src="components.js"></script>
+<script src="app.js"></script>
+<script src="live.js"></script>
+<script>
+/* debug hook: ?debug=1 lists elements wider than the viewport in a DOM node */
+if (location.search.includes("debug=1")) {
+  setTimeout(() => {
+    const vw = document.documentElement.clientWidth;
+    const bad = [];
+    document.querySelectorAll("*").forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width > vw + 1 || r.right > vw + 1) {
+        bad.push(`${el.tagName}.${(el.className || "").toString().split(" ")[0]}=${Math.round(r.width)}/right${Math.round(r.right)}`);
+      }
+    });
+    const d = document.createElement("pre");
+    d.id = "OVERFLOW_DEBUG";
+    d.textContent = `vw=${vw} scrollW=${document.documentElement.scrollWidth} :: ${bad.slice(0, 12).join(" | ")}`;
+    document.body.appendChild(d);
+  }, 700);
+}
+</script>
+</body>
+</html>

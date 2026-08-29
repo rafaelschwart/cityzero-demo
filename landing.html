@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>City Zero Miami · Free Guided Tour</title>
+<link rel="icon" href="assets/logo-cz-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  /* City Zero conversion landing · CONCEPT (not published).
+     Brand from cityzero.com: #131619 canvas, Heebo, white knockout,
+     sharp buttons. One goal: book the free guided tour. */
+  :root{
+    --bg:#101316; --bg2:#131619; --panel:#1A1F24; --line:rgba(255,255,255,.10);
+    --fg:#EDEEF0; --muted:#9CA4AC; --dim:#707070; --green:#46A758; --amber:#D9A13B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"Heebo",sans-serif;background:var(--bg2);color:var(--fg);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .ribbon{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--amber);color:#131619;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:4px 10px}
+  header{position:sticky;top:22px;z-index:40;backdrop-filter:blur(8px);background:rgba(16,19,22,.82);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .nav img{height:20px}
+  .cta{display:inline-block;background:#fff;color:#131619;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;padding:13px 26px;text-decoration:none;transition:transform .12s ease, opacity .15s ease}
+  .cta:hover{opacity:.9}.cta:active{transform:translateY(1px)}
+  .cta.sm{padding:9px 16px;font-size:12px}
+  /* hero */
+  .hero{padding:84px 0 60px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-40% -20% auto;height:140%;background:radial-gradient(720px 420px at 78% 18%, rgba(70,167,88,.10), transparent 60%),radial-gradient(600px 400px at 12% 80%, rgba(255,255,255,.05), transparent 55%);pointer-events:none}
+  .kicker{font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+  h1{font-weight:900;font-size:clamp(34px,6vw,58px);line-height:1.04;letter-spacing:-.015em;text-transform:uppercase;max-width:15ch}
+  .hero p.sub{margin:22px 0 30px;font-size:18px;color:var(--muted);max-width:52ch;font-weight:300}
+  .hero p.sub b{color:var(--fg);font-weight:600}
+  /* form */
+  .form{display:flex;gap:10px;flex-wrap:wrap;max-width:560px}
+  .form input{flex:1 1 180px;height:52px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:inherit;font-size:15px;padding:0 16px;outline:none}
+  .form input:focus{border-color:#fff}
+  .form button{flex:0 0 auto;height:52px;border:0;cursor:pointer;background:#fff;color:#131619;font-weight:800;font-size:14px;letter-spacing:.05em;text-transform:uppercase;padding:0 28px}
+  .form button:active{transform:translateY(1px)}
+  .formnote{font-size:12.5px;color:var(--dim);margin-top:10px}
+  .ok{display:none;background:var(--panel);border:1px solid rgba(70,167,88,.5);padding:18px 20px;max-width:560px}
+  .ok b{color:var(--green)}
+  /* proof bar */
+  .proof{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg)}
+  .proofrow{display:flex;gap:32px;justify-content:space-between;padding:18px 0;flex-wrap:wrap}
+  .pf{display:flex;flex-direction:column;gap:2px}
+  .pf b{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .pf span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  /* sections */
+  section{padding:64px 0}
+  h2{font-weight:800;font-size:clamp(22px,3.4vw,32px);text-transform:uppercase;letter-spacing:-.01em;margin-bottom:8px}
+  .lead{color:var(--muted);max-width:60ch;margin-bottom:32px}
+  /* classes */
+  .classes{display:flex;gap:10px;flex-wrap:wrap}
+  .cls{border:1px solid var(--line);background:var(--panel);padding:10px 18px;font-weight:600;font-size:14px;letter-spacing:.03em;text-transform:uppercase}
+  .cls span{color:var(--dim);font-weight:400;font-size:12px;text-transform:none;letter-spacing:0;display:block}
+  /* plans */
+  .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .plan{border:1px solid var(--line);background:var(--panel);padding:24px 22px;display:flex;flex-direction:column;gap:6px}
+  .plan.hot{border-color:rgba(255,255,255,.4)}
+  .plan .nm{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .plan .pr{font-size:32px;font-weight:800;letter-spacing:-.02em}
+  .plan .pr i{font-style:normal;font-size:14px;color:var(--muted);font-weight:400}
+  .plan .d{font-size:13px;color:var(--muted)}
+  .plansnote{font-size:12.5px;color:var(--dim);margin-top:14px}
+  /* quotes */
+  .quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .q{border:1px solid var(--line);background:var(--panel);padding:22px}
+  .q .stars{color:var(--amber);letter-spacing:.2em;font-size:13px;margin-bottom:10px}
+  .q p{font-size:14.5px;color:var(--fg);font-weight:300}
+  .q span{display:block;margin-top:12px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  /* final */
+  .final{background:var(--bg);border-top:1px solid var(--line);text-align:left}
+  footer{border-top:1px solid var(--line);padding:26px 0 90px;font-size:12.5px;color:var(--dim)}
+  footer b{color:var(--muted);font-weight:500}
+  /* sticky mobile CTA */
+  .sticky{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;padding:10px 14px;background:rgba(16,19,22,.94);border-top:1px solid var(--line)}
+  .sticky a{display:block;text-align:center}
+  @media(max-width:720px){.sticky{display:block}.proofrow{gap:14px}.pf b{font-size:17px}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="ribbon">Concept page · built by Arqentia · not published</div>
+
+<header>
+  <div class="wrap nav">
+    <img src="assets/logo-horizontal-white.png" alt="City Zero Miami">
+    <a class="cta sm" href="#tour">Free guided tour</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="kicker">Brickell · Miami · 4 floors</div>
+    <h1>Your city.<br>Your gym.<br>Your people.</h1>
+    <p class="sub">40+ weekly classes, the home of <b>Zumba with Beto Perez</b>, and a community of <b>110,999</b> that trains like a family. See it for yourself: the tour is free and takes 20 minutes.</p>
+
+    <form class="form" id="tour" onsubmit="return captureLead(event)">
+      <input required name="name" placeholder="First name" autocomplete="given-name">
+      <input required name="phone" placeholder="Phone" inputmode="tel" autocomplete="tel">
+      <button type="submit">Book my free tour</button>
+    </form>
+    <p class="formnote">Two fields, no card, no commitment. The team confirms your slot by text.</p>
+    <div class="ok" id="ok"><b>You're in.</b> The team will text you shortly to pick your tour time. Prefer now? Walk in at 591 SW 8th Street.</div>
+  </div>
+
+  <div class="proof">
+    <div class="wrap proofrow">
+      <div class="pf"><b>4.8 / 5</b><span>138 Google reviews</span></div>
+      <div class="pf"><b>110,999</b><span>Instagram community</span></div>
+      <div class="pf"><b>40+</b><span>weekly classes</span></div>
+      <div class="pf"><b>4 floors</b><span>of training space</span></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2>Train how you want</h2>
+      <p class="lead">From the world's most famous Zumba floor to strength, spin and jiu jitsu. Every level, every schedule.</p>
+      <div class="classes">
+        <div class="cls">Zumba <span>with Beto Perez &amp; team</span></div>
+        <div class="cls">Full Body Conditioning <span>strength &amp; sweat</span></div>
+        <div class="cls">Body Fit <span>functional training</span></div>
+        <div class="cls">Spin <span>ride to the beat</span></div>
+        <div class="cls">Jiu Jitsu <span>4-floor mat space</span></div>
+        <div class="cls">Cardio Dance <span>the Miami classic</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <h2>Straight prices</h2>
+      <p class="lead">What you see on this page is what you pay. Pick on the tour, not before.</p>
+      <div class="plans">
+        <div class="plan"><span class="nm">Monthly</span><span class="pr">$129.99<i>/mo</i></span><span class="d">Full gym access</span></div>
+        <div class="plan hot"><span class="nm">Monthly +</span><span class="pr">$179.99<i>/mo</i></span><span class="d">Gym + classes</span></div>
+        <div class="plan"><span class="nm">All in</span><span class="pr">$199.99<i>/mo</i></span><span class="d">Everything, every floor</span></div>
+        <div class="plan"><span class="nm">Annual</span><span class="pr">$1,900<i>/yr</i></span><span class="d">Two months free vs monthly</span></div>
+      </div>
+      <p class="plansnote">Family plan from $279/mo. Plans and prices as published by City Zero.</p>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <h2>Members say it better</h2>
+      <div class="quotes">
+        <div class="q"><div class="stars">★★★★★</div><p>"The best cardio classes in Miami, everyone is so friendly and happy, full of positive vibes here."</p><span>Miss Nicole · Google review</span></div>
+        <div class="q"><div class="stars">★★★★★</div><p>"The atmosphere was vibrant and welcoming, and the attention to detail really stood out."</p><span>Yussara Cunha · Google review</span></div>
+        <div class="q"><div class="stars">★★★★★</div><p>"The gym is big, 4 floors to go wild working out. I tried the jiu jitsu class, it was awesome."</p><span>305gym Explorer · Google review</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>20 minutes. No pressure.</h2>
+      <p class="lead">Walk the four floors, meet the coaches, feel the room. Then decide.</p>
+      <a class="cta" href="#tour">Book my free tour</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>City Zero Miami</b> · 591 SW 8th Street, Miami, FL 33130 · Mon–Thu 6am–10pm · Fri 6am–9pm · Sat–Sun from 8am
+  </div>
+</footer>
+
+<div class="sticky"><a class="cta" href="#tour">Book my free tour</a></div>
+
+<script>
+function captureLead(e) {
+  e.preventDefault();
+  const f = e.target;
+  const lead = { name: f.name.value.trim(), phone: f.phone.value.trim(), at: new Date().toISOString() };
+  if (!lead.name || !lead.phone) return false;
+  const leads = JSON.parse(localStorage.getItem("c0.leads") || "[]");
+  leads.unshift(lead);
+  localStorage.setItem("c0.leads", JSON.stringify(leads));
+  f.style.display = "none";
+  document.querySelector(".formnote").style.display = "none";
+  document.getElementById("ok").style.display = "block";
+  return false;
+}
+</script>
+</body>
+</html>
