@@ -36,7 +36,7 @@ const NAV_ICONS = {
 
 const SECTIONS_SIMPLE = [
   { group: "Your gym · live" },
-  { id: "home", label: "Today", badge: () => DATA.today.do.length, hot: true },
+  { id: "home", label: "Overview", badge: () => DATA.today.do.length, hot: true },
   { id: "hours", label: "Hours" },
   { id: "classes", label: "Classes" },
   { group: "More members" },
@@ -50,18 +50,20 @@ const SECTIONS_SIMPLE = [
   { id: "pulsereport", label: "Monthly Report" },
   { group: "Under the hood" },
   { id: "engine", label: "The Engine" },
+  { group: "Account" },
+  { id: "profile", label: "Profile" },
 ];
 
 const SECTIONS_FULL = [
   { group: "Pitch · ops manager" },
-  { id: "home", label: "Today" },
+  { id: "home", label: "Overview" },
   { id: "grow", label: "Grow" },
   { id: "keep", label: "Keep" },
   { id: "engine", label: "The Engine" },
   { group: "Guide" },
   { id: "start", label: "Start Here" },
   { group: "Monitor · live" },
-  { id: "overview", label: "Overview" },
+  { id: "overview", label: "Monitor" },
   { id: "exceptions", label: "Exceptions", badge: () => DATA.exceptions.filter(x => x.status === "OPEN").length, hot: true },
   { id: "surfaces", label: "Surfaces" },
   { id: "routes", label: "Routes & Links", badge: () => DATA.routesSummary.failing, hot: true },
@@ -90,12 +92,14 @@ const SECTIONS_FULL = [
   { id: "integrations", label: "Integrations" },
   { id: "audit", label: "Audit Log" },
   { id: "settings", label: "Owners & Thresholds" },
+  { id: "profile", label: "Profile" },
 ];
 
 const SECTIONS = FULL ? SECTIONS_FULL : SECTIONS_SIMPLE;
 
 const SECTION_DESC = {
   overview: "The day at a glance: open problems, what broke this morning, live activity and the insights that matter.",
+  profile: "The demo account behind this dashboard: read-only access, what it watches, and who sponsors it on the client side.",
   exceptions: "Every verified disagreement between City Zero's public surfaces, with the evidence side by side, an age and an owner.",
   surfaces: "The public surfaces the monitor reads every morning, and the hours comparison that started this case.",
   routes: "Every linked route on the site checked daily with its real HTTP status.",
@@ -275,6 +279,78 @@ function favatar(name, size) {
   return `<span class="favatar" style="width:${size}px;height:${size}px"><i>${ini}</i><img src="${memberPhoto(name)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 
+/* ---------- Overview (template port: dashboard/default) ---------- */
+
+function ovChart() {
+  const days = 90;
+  const pts = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 864e5);
+    const dow = d.getDay();
+    let v = dow === 0 ? 52 : dow === 6 ? 148 : 92 + ((dow * 17) % 26);
+    v += ((i * 37) % 23) + ((i * 13) % 11) - 16;
+    if (i % 9 === 0) v += 58;
+    if (i % 31 === 0) v += 30;
+    pts.push({ d, v: Math.max(30, v) });
+  }
+  const max = Math.max.apply(null, pts.map(p => p.v)) * 1.08;
+  const W = 1000, H = 240;
+  const xy = pts.map((p, i) => [i / (days - 1) * W, H - p.v / max * H]);
+  const line = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join("");
+  const area = line + `L${W},${H}L0,${H}Z`;
+  const bline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + (H - (H - c[1]) * 0.32).toFixed(1)).join("");
+  const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
+  const labels = [];
+  for (let i = 0; i < days; i += 11) labels.push(lf.format(pts[i].d));
+  return { area, line, bline, labels };
+}
+
+function ovCard(icon, label, value, valId, badge, badgeCls, sub, hash) {
+  return `<div class="kpicard ov click" onclick="location.hash='${hash}'">
+    <span class="ovic">${icon}</span>
+    <div class="ovlab">${label}</div>
+    <div class="kpirow"><span class="kpiv"${valId ? ` id="${valId}"` : ""}>${value}</span><span class="kbadge ${badgeCls}">${badge}</span></div>
+    <div class="kpilast">${sub}</div>
+  </div>`;
+}
+
+function ovMemberRows() {
+  const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric", year: "numeric" });
+  return DATA.members.rows.map((r, i) => {
+    const billing = r.risk && r.risk.toLowerCase().indexOf("charge") >= 0
+      ? `<span class="chip red">${tr("Retrying", "Reintentando")}</span>` : `<span class="chip green">${tr("Paid", "Pagado")}</span>`;
+    const status = r.status === "active" ? `<span class="pill">${tr("Active", "Activo")}</span>` : `<span class="pill" style="color:var(--amber)">${tr("Frozen", "Congelado")}</span>`;
+    const nm = r.name.replace(/'/g, "\\'");
+    return `<tr class="ovmr" data-q="${esc(r.name.toLowerCase())}" data-st="${r.status}">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="ck" aria-label="Select ${esc(r.name)}"></td>
+      <td class="t click" style="white-space:nowrap" onclick="openMember('${nm}')">${favatar(r.name, 26)} <span style="vertical-align:6px">${esc(r.name)} <span class="mono" style="color:var(--muted-foreground);font-size:11px">#CZ${1400 + i * 37}</span></span></td>
+      <td>${status}</td>
+      <td>${billing}</td>
+      <td class="mono" style="font-size:12.5px">${esc(r.plan)}</td>
+      <td style="color:var(--muted-foreground);font-size:12.5px">${lf.format(new Date(r.since + "T12:00:00"))}</td>
+    </tr>`;
+  }).join("");
+}
+
+function ovFilter() {
+  const q = (document.getElementById("ovq") ? document.getElementById("ovq").value : "").toLowerCase();
+  const st = document.getElementById("ovst") ? document.getElementById("ovst").value : "all";
+  document.querySelectorAll(".ovmr").forEach(el => {
+    const ok = (!q || (el.getAttribute("data-q") || "").indexOf(q) >= 0) && (st === "all" || el.getAttribute("data-st") === st);
+    el.style.display = ok ? "" : "none";
+  });
+}
+
+function ovExport() {
+  const csv = "Name,Plan,Since,Status,Note\n" + DATA.members.rows.map(r =>
+    [r.name, `"${r.plan}"`, r.since, r.status, `"${r.risk || ""}"`].join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+  a.download = "cityzero-members-sample.csv";
+  a.click();
+  toast(tr("Export", "Exportación"), tr("Sample member CSV downloaded", "CSV sample de miembros descargado"));
+}
+
 function vToday() {
   const t = DATA.today;
   const floors = t.byFloor.map(f => `
@@ -321,18 +397,42 @@ function vToday() {
       <b>${esc(dateStr)}</b>
     </div>
   </div>
-  ${topbar("Today", tr("YOUR GYM, LIVE: EVERY BADGE, EVERY FLOOR, EVERY CLASS, AS IT HAPPENS.", "TU GIMNASIO, EN VIVO: CADA ENTRADA, CADA PISO, CADA CLASE, MIENTRAS PASA."), modeChip())}
-  <div class="livetiles">
-    <div class="ltile">
-      <div class="lk">${tr("In the gym now", "En el gym ahora")} <span class="livedot"></span></div>
-      <div class="lv mono" id="innow-val">${t.inNow}</div>
-    </div>
-    <div class="ltile">
-      <div class="lk">${tr("Check-ins today", "Check-ins hoy")}</div>
-      <div class="lv mono" id="today-val">${t.todayTotal}</div>
-    </div>
-    ${floors}
+  ${topbar("Overview", tr("YOUR GYM, LIVE: EVERY BADGE, EVERY FLOOR, EVERY CLASS, AS IT HAPPENS.", "TU GIMNASIO, EN VIVO: CADA ENTRADA, CADA PISO, CADA CLASE, MIENTRAS PASA."), modeChip())}
+  <div class="kpigrid" style="margin-top:18px">
+    ${ovCard(KB_I.grid, tr("In the gym now", "En el gym ahora"), t.inNow, "innow-val", `<span class="livedot"></span> LIVE`, "up", tr("Badges through the door, right now", "Entradas por la puerta, ahora mismo"), "#hours")}
+    ${ovCard(KB_I.cal3, tr("Check-ins today", "Check-ins hoy"), t.todayTotal, "today-val", CRM_I.tUp + "+12%", "up", tr("vs the 28-day average", "vs el promedio de 28 días"), "#hours")}
+    ${ovCard(KB_I.listI, tr("Active members", "Miembros activos"), DATA.grow.members, null, CRM_I.tUp + "+" + DATA.grow.joins, "up", tr("The road to 500, measured", "El camino a 500, medido"), "#grow")}
+    ${ovCard(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`, tr("Recoverable revenue", "Ingreso rescatable"), "$" + (DATA.keep.recoverySum + DATA.keep.saveSum).toLocaleString(), null, CRM_I.tDn + tr("leaking", "fugando"), "down", tr("Overdue members who still show up", "Miembros vencidos que siguen viniendo"), "#keep")}
   </div>
+  ${(() => { const c = ovChart(); return `
+  <div class="crmcard">
+    <div class="cchead">
+      <div>
+        <div class="cctitle">${tr("Gym Activity", "Actividad del gimnasio")}</div>
+        <div class="ccdesc">${tr("Door check-ins for the last 3 months", "Check-ins de puerta de los últimos 3 meses")} · <span class="chip gray" style="font-size:9px;padding:1px 6px">SAMPLE ${tr("curve", "curva")}</span></div>
+      </div>
+      <div class="ccact">
+        <span class="actleg"><i></i>${tr("Check-ins", "Check-ins")}</span>
+        <span class="actleg dim"><i></i>${tr("Class bookings", "Reservas de clase")}</span>
+        <select class="select" style="height:30px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The sample dataset covers 3 months','El dataset sample cubre 3 meses')); this.selectedIndex=0">
+          <option selected>${tr("3 months", "3 meses")}</option><option>${tr("30 days", "30 días")}</option><option>${tr("7 days", "7 días")}</option>
+        </select>
+        <button class="btn outline sm" onclick="location.hash='${FULL ? "#report" : "#pulsereport"}'">${tr("View report", "Ver reporte")}</button>
+      </div>
+    </div>
+    <div class="actwrap">
+      <svg class="actsvg" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="currentColor" stop-opacity=".13"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="${c.area}" fill="url(#ovg)"/>
+        <path d="${c.bline}" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-width="1" vector-effect="non-scaling-stroke"/>
+        <path d="${c.line}" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="actx">${c.labels.map(l => `<span>${l}</span>`).join("")}</div>
+    </div>
+  </div>`; })()}
+  <div class="livetiles">${floors}</div>
   <div class="grid half">
     <div class="panel">
       <div class="ptitle">${tr("Walking in right now", "Entrando ahora mismo")} <span class="hint">${tr("the front door, live", "la puerta, en vivo")}</span></div>
@@ -364,6 +464,99 @@ function vToday() {
     <div class="panel">
       <div class="ptitle">${tr("Worth knowing", "Vale saber")}</div>
       <ul class="knowlist">${know}</ul>
+    </div>
+  </div>
+  <div class="crmcard" style="margin-top:20px">
+    <div class="cchead" style="flex-wrap:wrap">
+      <div>
+        <div class="cctitle">${DATA.grow.members} ${tr("Members", "Miembros")}</div>
+        <div class="ccdesc">${tr("Recent member records with plan, billing, status and signup date.", "Registros recientes con plan, cobro, estado y fecha de alta.")} <span class="chip gray" style="font-size:9px;padding:1px 6px;vertical-align:1px">SAMPLE ${tr("rows", "filas")}</span></div>
+      </div>
+      <div class="ccact">
+        <span class="kbsearch">${KB_I.search}<input id="ovq" type="search" placeholder="${tr("Search members...", "Buscar miembros...")}" oninput="ovFilter()"></span>
+        <select id="ovst" class="select" style="height:32px;width:auto;font-size:12.5px" onchange="ovFilter()">
+          <option value="all">${tr("All status", "Todo estado")}</option>
+          <option value="active">${tr("Active", "Activo")}</option>
+          <option value="frozen">${tr("Frozen", "Congelado")}</option>
+        </select>
+        <button class="btn outline sm" onclick="ovExport()">${tr("Export", "Exportar")}</button>
+      </div>
+    </div>
+    <div class="tablewrap"><table class="crmtable">
+      <thead><tr><th style="width:34px"></th><th>${tr("Member", "Miembro")}</th><th>${tr("Status", "Estado")}</th><th>${tr("Billing", "Cobro")}</th><th>${tr("Plan", "Plan")}</th><th>${tr("Joined", "Alta")}</th></tr></thead>
+      <tbody>${ovMemberRows()}</tbody>
+    </table></div>
+    <div class="ccfoot"><p>${tr(`Viewing ${DATA.members.rows.length} sample rows of ${DATA.grow.members} members · real rows need Glofox export access`, `Viendo ${DATA.members.rows.length} filas sample de ${DATA.grow.members} miembros · las reales requieren export de Glofox`)}</p></div>
+  </div>
+  ${demoNote()}`;
+}
+
+/* ---------- Profile (template port: dashboard/profile) ---------- */
+
+function avToggle(e) { e.stopPropagation(); const m = document.getElementById("avmenu"); if (m) m.classList.toggle("open"); }
+function avHide() { const m = document.getElementById("avmenu"); if (m) m.classList.remove("open"); }
+function avGo(h) { avHide(); location.hash = h; }
+document.addEventListener("click", avHide);
+
+function vProfile() {
+  const badges = `
+    <span class="chip amber">DEMO ${tr("ACCOUNT", "CUENTA")}</span>
+    <span class="chip green">✓ ${tr("Verified", "Verificada")}</span>
+    <span class="chip gray">${tr("Read-only", "Solo lectura")}</span>
+    <span class="chip gray">Miami · UTC-4</span>`;
+  const tabs = [tr("Overview", "Resumen"), "Personal", tr("Employment", "Empleo"), tr("Compensation", "Compensación"), tr("Time off", "Vacaciones"), tr("Documents", "Documentos")];
+  const tabRow = tabs.map((l, i) => `<button class="tab${i === 0 ? " on" : ""}"${i === 0 ? "" : ` onclick="toast('${l}', tr('SAMPLE tab: ships with the real build', 'Tab SAMPLE: llega con el build real'))"`}>${l}</button>`).join("");
+  const wd = [
+    [tr("Account ID", "ID de cuenta"), "CZ-DEMO-011"], [tr("Department", "Departamento"), tr("Operations", "Operaciones")], [tr("Start date", "Fecha de inicio"), "Aug 20, 2026"],
+    [tr("Engagement status", "Estado"), tr("Active", "Activo")], [tr("Team", "Equipo"), "Arqentia · Gym OS"], [tr("Engagement length", "Antigüedad"), tr("9 days", "9 días")],
+    [tr("Access level", "Nivel de acceso"), tr("Read-only monitor", "Monitor solo lectura")], [tr("Current project", "Proyecto actual"), tr("Road to 500 members", "Camino a 500 miembros")], ["", ""],
+  ].filter(x => x[0]).map(x => `<div class="pfwd"><span>${x[0]}</span><b>${x[1]}</b></div>`).join("");
+  return `
+  ${topbar("Profile", tr("THE DEMO ACCOUNT: WHAT IT SEES, WHAT IT CAN NEVER TOUCH", "LA CUENTA DEMO: QUÉ VE Y QUÉ NUNCA PUEDE TOCAR"), p2chip())}
+  <div class="crmcard" style="margin-top:18px">
+    <div class="pfhead">
+      <span class="pfava">RS</span>
+      <div class="pfmain">
+        <h2>City Zero Demo</h2>
+        <p>citizerodemo@arqentia.com · ${tr("Operations Dashboard Account", "Cuenta del dashboard de operaciones")}</p>
+        <div class="pfbadges">${badges}</div>
+      </div>
+      <div class="pfact">
+        <button class="btn outline sm" onclick="location.href='mailto:citizerodemo@arqentia.com'">${tr("Email", "Correo")}</button>
+        <button class="btn outline sm" onclick="toast(tr('Edit profile', 'Editar perfil'), tr('SAMPLE: profile editing ships with the real build', 'SAMPLE: la edición llega con el build real'))">${CRM_I.pen.replace("<svg", "<svg style='width:13px;height:13px'")} ${tr("Edit profile", "Editar perfil")}</button>
+      </div>
+    </div>
+    <div class="tabs" style="margin-top:16px">${tabRow}</div>
+  </div>
+  <div class="pfgrid">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cctitle" style="margin-bottom:8px">${tr("About", "Acerca de")}</div>
+      <p class="pfabout">${tr(
+    "This account runs the CITY 0 OPS pilot for City Zero: one screen over Glofox and BioStar 2 that watches check-ins, classes, leads and payments without writing to any of them. Everything it shows is either captured public evidence or rows marked SAMPLE; the focus is the road from 200+ to 500 members.",
+    "Esta cuenta corre el piloto CITY 0 OPS para City Zero: una pantalla sobre Glofox y BioStar 2 que observa check-ins, clases, leads y cobros sin escribir en ninguno. Todo lo que muestra es evidencia pública capturada o filas marcadas SAMPLE; el foco es el camino de 200+ a 500 miembros.")}</p>
+      <div class="cctitle" style="margin:20px 0 10px">${tr("Work details", "Detalles")}</div>
+      <div class="pfwdgrid">${wd}</div>
+      <hr class="ksep2" style="margin:18px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="cctitle">${tr("Reporting line", "Línea de reporte")}</div>
+          <div class="ccdesc">${tr("Client sponsor", "Sponsor del cliente")}</div>
+        </div>
+        <button class="btn outline sm" onclick="toast(tr('Org chart', 'Organigrama'), tr('SAMPLE: org data needs Discovery', 'SAMPLE: el organigrama requiere Discovery'))">${tr("Org chart", "Organigrama")}</button>
+      </div>
+      <div class="pfrep"><span class="pfava sm">BP</span><div><b>Beto Pérez</b><span>${tr("Founder · City Zero (public)", "Founder · City Zero (público)")}</span></div></div>
+    </div>
+    <div class="pfrail">
+      <div class="crmcard" style="margin-bottom:14px">
+        <div class="cctitle" style="margin-bottom:10px">${tr("Record status", "Estado del registro")}</div>
+        <div class="pfst">${KB_I.check2}<div><b>${tr("Demo access active", "Acceso demo activo")}</b><span>${tr("Read-only: no writes to any City Zero system", "Solo lectura: sin escrituras a ningún sistema de City Zero")}</span></div></div>
+        <p class="ccdesc" style="margin-top:12px">${tr("Updated Aug 29, 2026 by Arqentia", "Actualizado 29 ago 2026 por Arqentia")}</p>
+      </div>
+      <div class="crmcard" style="margin-bottom:0">
+        <div class="cctitle" style="margin-bottom:10px">${tr("Upcoming events", "Próximos eventos")}</div>
+        <div class="pfev">${KB_I.cal3}<div><b>${tr("Demo walkthrough", "Recorrido del demo")}</b><span>${tr("This week", "Esta semana")}</span></div></div>
+        <div class="pfev">${KB_I.cal3}<div><b>Discovery</b><span>${tr("Pending authorization", "Pendiente de autorización")}</span></div></div>
+      </div>
     </div>
   </div>
   ${demoNote()}`;
@@ -2721,7 +2914,7 @@ const VIEWS = {
   start: vStart,
   overview: vOverview, exceptions: vExceptions, surfaces: vSurfaces, routes: vRoutes,
   reviews: vReviews, report: vReport, settings: vSettings,
-  pipeline: vPipeline, leads: vLeads, members: vMembers,
+  pipeline: vPipeline, leads: vLeads, members: vMembers, profile: vProfile,
   workflows: vWorkflows, triggers: vTriggers, tasks: vTasks,
   analytics: vAnalytics, pulsereport: vPulseReport, paidmedia: vPaidMedia, meta: vMeta, integrations: vIntegrations, audit: vAudit,
   classes: vClasses, access: vAccess, campaigns: vCampaigns, landing: vLanding,

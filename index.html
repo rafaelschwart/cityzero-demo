@@ -61,7 +61,17 @@
           <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
           <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"></path></svg>
         </button>
-        <span class="avatar sm ahav" style="cursor:pointer" data-tip="Log out" onclick="location.href='login.html'">RS</span>
+        <span style="position:relative;display:inline-flex">
+          <span class="avatar sm ahav" style="cursor:pointer" onclick="avToggle(event)">RS</span>
+          <div class="avmenu" id="avmenu" onclick="event.stopPropagation()">
+            <div class="avh"><span class="avatar sm">RS</span><div><b>City Zero Demo</b><span>citizerodemo@arqentia.com</span></div></div>
+            <button onclick="avGo('#profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>Account</button>
+            <button onclick="avHide();toast('Billing', tr('SAMPLE: invoices ship with the real build','SAMPLE: las facturas llegan con el build real'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>Billing</button>
+            <button onclick="avHide();toast(tr('Notifications','Notificaciones'), tr('SAMPLE: morning email + alerts','SAMPLE: correo matutino + alertas'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Notifications</button>
+            <hr>
+            <button onclick="location.href='login.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Log out</button>
+          </div>
+        </span>
       </div>
     </header>
     <main class="content" id="content"></main>

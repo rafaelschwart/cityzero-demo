@@ -176,10 +176,10 @@ html:not(.dark) .hero img { filter: saturate(.4) brightness(.95); }
 
 /* ================= content & topbar ================= */
 .content { padding: 0 0 64px; min-width: 0; overflow-x: clip; }
-.inner { max-width: 1280px; padding: 0 32px; }
+.inner { max-width: none; padding: 0 32px; }
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  padding: 22px 32px 18px; border-bottom: 1px solid var(--border); max-width: 1280px;
+  padding: 22px 32px 18px; border-bottom: 1px solid var(--border); max-width: none;
 }
 .topbar h1 { font-weight: 600; font-size: 20px; letter-spacing: -.01em; line-height: 1.25; }
 .topbar .sub { font-size: 13px; color: var(--muted-foreground); margin-top: 3px; }
@@ -265,7 +265,7 @@ html:not(.dark) .hero img { filter: saturate(.4) brightness(.95); }
 .ptitle .hint { font-size: 12px; font-weight: 400; color: var(--muted-foreground); }
 
 /* ================= metric strip (non-overview sections) ================= */
-.metrics { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; max-width: 1280px; padding: 20px 32px 4px; }
+.metrics { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; max-width: none; padding: 20px 32px 4px; }
 .metric {
   background: linear-gradient(to top, color-mix(in srgb, var(--primary) 5%, var(--card)), var(--card));
   border: 1px solid var(--border); border-radius: var(--radius-xl);
@@ -280,7 +280,7 @@ html.dark .metric { background: var(--card); }
 .metric .s .chip { margin-left: 0; }
 
 /* ================= layout grids & panels ================= */
-.grid { display: grid; gap: 20px; max-width: 1280px; padding: 20px 32px 0; }
+.grid { display: grid; gap: 20px; max-width: none; padding: 20px 32px 0; }
 .grid.split { grid-template-columns: 2fr 1fr; }
 .grid.half { grid-template-columns: 1fr 1fr; }
 .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); padding: 20px 22px 22px; min-width: 0; }
@@ -668,7 +668,7 @@ tr.selrow td { background: color-mix(in oklab, var(--muted) 60%, transparent); }
 .kv dd.mono { font-family: var(--mono); font-size: 12px; }
 
 /* ================= surfaces ================= */
-.surfaces { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1280px; padding: 20px 32px 0; }
+.surfaces { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: none; padding: 20px 32px 0; }
 .scard { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); padding: 18px 20px; }
 .scard .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 3px; }
 .scard h3 { font-weight: 600; font-size: 14.5px; }
@@ -743,7 +743,7 @@ tr.selrow td { background: color-mix(in oklab, var(--muted) 60%, transparent); }
 .accum p { font-size: 11.5px; color: var(--muted-foreground); letter-spacing: .02em; }
 
 /* ================= demo note ================= */
-.demo-note { max-width: 1216px; margin: 28px 32px 0; }
+.demo-note { max-width: none; margin: 28px 32px 0; }
 
 /* ================= dist bars (analytics) ================= */
 .dist { display: grid; gap: 7px; margin-top: 4px; }
@@ -805,7 +805,7 @@ tr.selrow td { background: color-mix(in oklab, var(--muted) 60%, transparent); }
 
 /* ---------- ops manager screens: Today / Grow / Keep ---------- */
 .livetiles {
-  max-width: 1280px; margin: 0 auto; padding: 18px 32px 0;
+  max-width: none; margin: 0 auto; padding: 18px 32px 0;
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
 }
 .livetiles.two { grid-template-columns: repeat(2, 1fr); }
@@ -949,7 +949,7 @@ html.dark .ltile, html.dark .ftile { background: var(--card); }
 
 /* ---------- hero banner (Today) ---------- */
 .hero {
-  position: relative; max-width: 1216px; margin: 16px auto 0;
+  position: relative; max-width: none; margin: 16px 32px 0;
   height: 148px; overflow: hidden; border-radius: 14px;
 }
 @media (max-width: 1290px) { .hero { margin: 12px 16px 0; } }
@@ -1282,7 +1282,7 @@ tr.click:hover td { background: color-mix(in srgb, var(--foreground) 3.5%, trans
 
 /* ---------- owner screen (the Pantalla layer) ---------- */
 .ownums {
-  max-width: 1280px; margin: 0 auto; padding: 18px 32px 0;
+  max-width: none; margin: 0 auto; padding: 18px 32px 0;
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
 }
 .onum {
@@ -1315,7 +1315,7 @@ tr.click:hover td { background: color-mix(in srgb, var(--foreground) 3.5%, trans
 .wcard h3 { font-size: 13.5px; font-weight: 700; }
 .wcard p { font-size: 12.5px; color: var(--muted-foreground); line-height: 1.55; }
 .ofoot {
-  max-width: 1280px; margin: 0 auto; padding: 14px 32px 0;
+  max-width: none; margin: 0 auto; padding: 14px 32px 0;
   font-size: 12.5px; color: var(--muted-foreground);
 }
 
@@ -1368,7 +1368,7 @@ tr.click:hover td { background: color-mix(in srgb, var(--foreground) 3.5%, trans
 .livesim .lsdet { font-size: 10.5px; color: var(--muted-foreground); }
 
 .secdesc {
-  max-width: 1280px; padding: 10px 32px 0; font-size: 13px; color: var(--muted-foreground);
+  max-width: none; padding: 10px 32px 0; font-size: 13px; color: var(--muted-foreground);
   line-height: 1.5;
 }
 .secdesc + * { margin-top: 4px; }
@@ -1549,3 +1549,53 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .kbdone svg { width: 15px; height: 15px; }
 @media (max-width: 900px) { .kanban2 { grid-auto-columns: 272px; } .kbsearch input { width: 150px; } }
 .kanban2 { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+/* ================= Overview + Profile + avatar menu (template port) ================= */
+#content > .crmhead, #content > .kpigrid, #content > .crmcard, #content > .crmrow2,
+#content > .kbbar, #content > .kanban2, #content > .tabs, #content > .pfgrid { margin-left: 32px; margin-right: 32px; }
+.kpicard.ov { gap: 9px; }
+.kpicard.ov .ovic { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--secondary); color: var(--foreground); margin-bottom: 2px; }
+.kpicard.ov .ovic svg { width: 15px; height: 15px; }
+.kpicard.ov .ovlab { font-size: 13px; color: var(--muted-foreground); }
+.kpicard.ov.click { cursor: pointer; transition: border-color .15s ease; }
+.kpicard.ov.click:hover { border-color: color-mix(in oklab, var(--foreground) 22%, var(--border)); }
+.kbadge .livedot { width: 6px; height: 6px; border-radius: 999px; background: var(--live); display: inline-block; }
+.actwrap { color: var(--foreground); }
+.actsvg { display: block; width: 100%; height: 280px; }
+.actx { display: flex; justify-content: space-between; margin-top: 8px; }
+.actx span { font-size: 11.5px; color: var(--muted-foreground); }
+.actleg { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--foreground); }
+.actleg i { width: 9px; height: 9px; border-radius: 2px; background: var(--foreground); display: inline-block; }
+.actleg.dim { color: var(--muted-foreground); }
+.actleg.dim i { background: color-mix(in oklab, var(--foreground) 30%, transparent); }
+.pfhead { display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap; }
+.pfava { display: inline-flex; align-items: center; justify-content: center; width: 74px; height: 74px; flex: none; border-radius: 999px; border: 2px solid var(--border); background: var(--secondary); font-size: 22px; font-weight: 700; letter-spacing: .02em; }
+.pfava.sm { width: 40px; height: 40px; font-size: 13px; border-width: 1px; }
+.pfmain { min-width: 0; flex: 1; }
+.pfmain h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.pfmain p { font-size: 13px; color: var(--muted-foreground); margin-top: 3px; }
+.pfbadges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.pfact { display: flex; gap: 8px; align-items: center; }
+.pfgrid { display: grid; grid-template-columns: 1fr 330px; gap: 14px; margin-top: 16px; }
+.pfabout { font-size: 13.5px; line-height: 1.65; color: color-mix(in oklab, var(--foreground) 88%, transparent); max-width: 75ch; }
+.pfwdgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 20px; }
+.pfwd span { display: block; font-size: 12px; color: var(--muted-foreground); }
+.pfwd b { display: block; font-size: 13.5px; font-weight: 500; margin-top: 3px; }
+.pfrep { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.pfrep b { display: block; font-size: 13.5px; font-weight: 500; }
+.pfrep span:last-child, .pfrep div span { display: block; font-size: 12px; color: var(--muted-foreground); }
+.pfst, .pfev { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+.pfst svg, .pfev svg { width: 16px; height: 16px; flex: none; color: var(--green); margin-top: 1px; }
+.pfev svg { color: var(--muted-foreground); }
+.pfst b, .pfev b { display: block; font-size: 13px; font-weight: 500; }
+.pfst span, .pfev span { display: block; font-size: 12px; color: var(--muted-foreground); margin-top: 2px; }
+.avmenu { position: absolute; top: calc(100% + 10px); right: 0; z-index: 90; min-width: 230px; display: none; flex-direction: column; background: var(--popover); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 5px; }
+.avmenu.open { display: flex; }
+.avmenu .avh { display: flex; align-items: center; gap: 9px; padding: 8px 9px 10px; border-bottom: 1px solid var(--border); margin-bottom: 5px; }
+.avmenu .avh b { display: block; font-size: 13px; font-weight: 600; }
+.avmenu .avh span { display: block; font-size: 11.5px; color: var(--muted-foreground); }
+.avmenu button { display: flex; align-items: center; gap: 9px; width: 100%; border: 0; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; padding: 7px 9px; border-radius: var(--radius-md); cursor: pointer; text-align: left; }
+.avmenu button:hover { background: var(--accent); }
+.avmenu button svg { width: 14px; height: 14px; color: var(--muted-foreground); }
+.avmenu hr { border: 0; border-top: 1px solid var(--border); margin: 5px 0; }
+@media (max-width: 980px) { .pfgrid { grid-template-columns: 1fr; } .pfwdgrid { grid-template-columns: repeat(2, 1fr); } }

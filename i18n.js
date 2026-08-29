@@ -68,6 +68,7 @@ const T = {
   // pantalla / reporte / motor (memo 26.08) + pantallas de ops manager
   "Today": "Hoy", "Monthly Report": "Reporte Mensual", "Morning Email": "Correo Matutino", "The Engine": "El Motor",
   "Grow": "Crecer", "Keep": "Retener", "Hours": "Horas", "Ads Report": "Reporte de Ads", "Inbox": "Bandeja",
+  "Overview": "Resumen", "Profile": "Perfil", "Account": "Cuenta", "Monitor": "Monitor",
   "Your gym · live": "Tu gimnasio · en vivo", "More members": "Más miembros", "Marketing": "Marketing",
   "Reports": "Reportes", "Under the hood": "Bajo el capó", "Pitch · ops manager": "Pitch · ops manager",
   "The screen · live": "La pantalla · en vivo", "The report · monthly": "El reporte · mensual",
