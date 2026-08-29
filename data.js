@@ -546,6 +546,16 @@ const DATA = {
 
   classes: {
     sample: true,
+    /* fotos REALES de cityzero.com/all-classes (descargadas 28.08); gymtemp
+       es el placeholder que el propio sitio usa para clases sin foto */
+    photos: {
+      "Zumba": "assets/classes/zumba.jpg",
+      "Full Body Conditioning": "assets/classes/fbc.jpg",
+      "Body Fit": "assets/classes/bodyfit.jpg",
+      "Spin": "assets/classes/gymtemp.jpg",
+      "Jiu Jitsu": "assets/classes/gymtemp.jpg",
+      "Cardio Dance": "assets/classes/zumbalift.jpg",
+    },
     note: "Class names captured from their public surfaces; timetable and volumes are SAMPLE until Glofox API access. Their portal already proves capacity + waitlist exist.",
     days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     list: [

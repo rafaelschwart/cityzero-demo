@@ -511,6 +511,17 @@ function vKeep() {
   ${demoNote()}`;
 }
 
+/* semaforo de ocupacion: verde (tranquilo) -> amarillo -> naranja -> rojo (lleno) */
+function heatColor(v, max) {
+  const r = max ? v / max : 0;
+  if (r <= 0.02) return "transparent";
+  if (r < 0.35) return `color-mix(in srgb, #4ade80 ${Math.round(20 + (r / 0.35) * 45)}%, transparent)`;
+  if (r < 0.6) return `color-mix(in srgb, #facc15 ${Math.round(38 + ((r - 0.35) / 0.25) * 34)}%, transparent)`;
+  if (r < 0.82) return `color-mix(in srgb, #fb923c ${Math.round(48 + ((r - 0.6) / 0.22) * 30)}%, transparent)`;
+  return `color-mix(in srgb, #ef4444 ${Math.round(58 + ((r - 0.82) / 0.18) * 32)}%, transparent)`;
+}
+const heatBand = r => r < 0.35 ? "#4ade80" : r < 0.6 ? "#facc15" : r < 0.82 ? "#fb923c" : "#ef4444";
+
 /* The hours heatmap: the week's temperature, straight from the door events. */
 function vHours() {
   const H = DATA.heatmap;
@@ -525,7 +536,7 @@ function vHours() {
       const marks = markAt[`${d}-${i + H.from}`];
       const hh = i + H.from;
       const tip = `${day} ${hh % 12 || 12} ${hh < 12 ? "AM" : "PM"} · ${v} ${tr("check-ins avg", "check-ins prom.")}${marks ? " · " + marks.join(", ") : ""}`;
-      return `<div class="hmcell" id="hm-${d}-${i}" onclick="hourDetail(${d},${i})" data-tip="${esc(tip)}" style="background:color-mix(in srgb, #4ade80 ${pct}%, transparent)">${marks ? `<i class="hmdot"></i>` : ""}</div>`;
+      return `<div class="hmcell" id="hm-${d}-${i}" onclick="hourDetail(${d},${i})" data-tip="${esc(tip)}" style="background:${heatColor(v, H.max)}">${marks ? `<i class="hmdot"></i>` : ""}</div>`;
     }).join("");
     return `<div class="hmday">${tr(day, ({ Mon: "Lun", Tue: "Mar", Wed: "Mié", Thu: "Jue", Fri: "Vie", Sat: "Sáb", Sun: "Dom" })[day] || day)}</div>${cells}`;
   }).join("");
@@ -547,9 +558,10 @@ function vHours() {
       </div>
     </div>
     <div class="hmlegend">
-      <span>${tr("quiet", "vacío")}</span>
-      ${[8, 25, 45, 65, 88].map(p => `<i style="background:color-mix(in srgb, #4ade80 ${p}%, transparent)"></i>`).join("")}
+      <span>${tr("calm", "tranquilo")}</span>
+      ${[0.15, 0.45, 0.7, 0.92].map(r => `<i style="background:${heatColor(r * H.max, H.max)}"></i>`).join("")}
       <span>${tr("packed", "lleno")}</span>
+      <span style="margin-left:14px">${tr("green = room to sell, red = at capacity", "verde = espacio por vender, rojo = a tope")}</span>
     </div>
   </div></div>
   <div class="grid"><div class="panel wide">
@@ -586,6 +598,7 @@ function hourDetail(d, i) {
   counts[1] += total - acc;
   const fname = {};
   (DATA.today.byFloor || []).forEach(f => { fname[f.floor] = f.name; });
+  const CAPS = { 1: 40, 2: 35, 3: 45, 4: 25 };   // aforo por piso (SAMPLE)
   const vals = [1, 2, 3, 4].map(f => counts[f]);
   const maxC = Math.max(...vals, 1), minC = Math.min(...vals);
   const DAYN = LANG === "es"
@@ -594,14 +607,16 @@ function hourDetail(d, i) {
   const hlabel = `${DAYN[d]} ${h % 12 || 12} ${h < 12 ? "AM" : "PM"}`;
   const floors = [4, 3, 2, 1].map(f => {
     const c = counts[f];
-    const pct = Math.round(100 * c / maxC);
+    const load = c / CAPS[f];
+    const col = heatBand(load);
     const busiest = c === maxC && total > 0, quietest = c === minC && total > 0 && maxC !== minC;
-    const cls = marks.filter(m => (CLASS_FLOOR[m.name] || 2) === f).map(m => `<span class="chip green" style="font-size:9px;padding:1px 6px">${esc(m.name)}</span>`).join(" ");
-    return `<div class="bldrow ${busiest ? "busy" : ""} ${quietest ? "quiet" : ""}">
-      <div class="bln">${tr("Floor", "Piso")} ${f}<span>${esc(fname[f] || "")}</span></div>
-      <div class="blbar"><i style="width:${total ? Math.max(4, pct) : 0}%"></i>${cls}</div>
-      <div class="blc mono">${c}</div>
-      <div class="bltag">${busiest ? tr("busiest", "más lleno") : quietest ? tr("quietest", "más vacío") : ""}</div>
+    const cls = marks.filter(m => (CLASS_FLOOR[m.name] || 2) === f).map(m => `<span class="chip gray" style="font-size:9px;padding:1px 6px">${esc(m.name)}</span>`).join(" ");
+    const loadTag = load >= 0.82 ? tr("at capacity", "a tope") : load >= 0.6 ? tr("filling up", "llenándose") : load >= 0.35 ? tr("active", "activo") : tr("room to sell", "espacio por vender");
+    return `<div class="bldrow ${quietest ? "quiet" : ""}" style="border-color:color-mix(in srgb, ${col} ${busiest ? 45 : 22}%, transparent)">
+      <div class="bln">${tr("Floor", "Piso")} ${f}<span>${esc(fname[f] || "")} · ${tr("cap", "aforo")} ${CAPS[f]}</span></div>
+      <div class="blbar"><i style="width:${total ? Math.max(4, Math.min(100, Math.round(load * 100))) : 0}%;background:${col}"></i>${cls}</div>
+      <div class="blc mono" style="color:${col}">${c}</div>
+      <div class="bltag" style="color:${col}">${loadTag}</div>
     </div>`;
   }).join("");
   box.innerHTML = `
@@ -1690,11 +1705,15 @@ function vClasses() {
       const blocks = (byCell[`${d}-${h}`] || []).map(w => {
         const pct = Math.round(100 * w.booked / w.cap);
         const tone = pct >= 95 ? "hot" : pct < 55 ? "low" : "";
+        const photo = (C.photos || {})[w.name];
         return `<div class="calblk ${tone}" data-q="${esc((w.name + " " + w.coach).toLowerCase())}"
           data-tip="${esc(`${w.name} · ${w.coach} · ${w.booked}/${w.cap}${w.wait ? ` · +${w.wait} waitlist` : ""}`)}">
-          <b>${esc(w.name)}</b>
-          <span class="cbm mono">${w.booked}/${w.cap}${w.wait ? ` <em>+${w.wait}</em>` : ""}</span>
-          <div class="cbbar"><i style="width:${pct}%"></i></div>
+          ${photo ? `<img class="cbimg" src="${photo}" alt="" loading="lazy" onerror="this.remove()">` : ""}
+          <div class="cbin">
+            <b>${esc(w.name)}</b>
+            <span class="cbm mono">${w.booked}/${w.cap}${w.wait ? ` <em>+${w.wait}</em>` : ""}</span>
+            <div class="cbbar"><i style="width:${pct}%"></i></div>
+          </div>
         </div>`;
       }).join("");
       const isNow = d === jsDay && h === nowD.getHours();
