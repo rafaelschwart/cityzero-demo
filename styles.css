@@ -100,8 +100,37 @@ button { font-family: inherit; }
 .text-muted { color: var(--muted-foreground); }
 .mono { font-family: var(--mono); font-size: 12px; }
 
-/* ================= shell & sidebar (ui/sidebar.tsx) ================= */
+/* ================= shell & sidebar (next-shadcn-admin template) ================= */
 .shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100dvh; }
+.shell.collapsed { grid-template-columns: 0 1fr; }
+.shell.collapsed .sidebar { display: none; }
+.inset { min-width: 0; display: flex; flex-direction: column; }
+
+/* header h-12 sticky con blur, receta del layout.tsx del template */
+.apphdr {
+  position: sticky; top: 0; z-index: 40;
+  height: 48px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--background) 55%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.apphdr .ahl, .apphdr .ahr { display: flex; align-items: center; gap: 8px; }
+.ahbtn {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: var(--radius-md); background: transparent; color: var(--foreground);
+  cursor: pointer; transition: background .15s ease;
+}
+.ahbtn:hover { background: var(--accent); }
+.ahbtn svg { width: 15px; height: 15px; }
+.ahsep { width: 1px; height: 16px; background: var(--border); margin: 0 6px; }
+.crumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted-foreground); }
+.crumb svg { width: 12px; height: 12px; opacity: .6; }
+.crumb b { color: var(--foreground); font-weight: 600; }
+.ahav { cursor: default; }
+.ico-sun { display: none; }
+html.dark .ico-sun { display: block; }
+html.dark .ico-moon { display: none; }
 .sidebar {
   background: var(--sidebar); border-right: 1px solid var(--border);
   position: sticky; top: 0; height: 100dvh;
@@ -122,13 +151,16 @@ html:not(.dark) .hero img { filter: saturate(.4) brightness(.95); }
   opacity: .75; padding: 14px 8px 5px; letter-spacing: .02em;
 }
 .nav a {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  font-size: 13.5px; font-weight: 400; color: var(--foreground);
-  text-decoration: none; padding: 7px 8px; border-radius: var(--radius-md);
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; font-size: 13px; font-weight: 400; color: var(--foreground);
+  text-decoration: none; padding: 0 8px; border-radius: var(--radius-md);
   transition: background .12s ease, color .12s ease;
 }
+.nav a .navico { width: 16px; height: 16px; flex: 0 0 auto; color: var(--muted-foreground); }
+.nav a .navlbl { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav a:hover { background: var(--sidebar-accent); }
 .nav a.active { background: var(--sidebar-accent); font-weight: 500; }
+.nav a.active .navico { color: var(--foreground); }
 .nav a .n {
   font-family: var(--mono); font-size: 10.5px; color: var(--muted-foreground);
   background: var(--secondary); border: 1px solid var(--border);
@@ -232,7 +264,12 @@ html:not(.dark) .hero img { filter: saturate(.4) brightness(.95); }
 
 /* ================= metric strip (non-overview sections) ================= */
 .metrics { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; max-width: 1280px; padding: 20px 32px 4px; }
-.metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); padding: 16px; min-width: 0; }
+.metric {
+  background: linear-gradient(to top, color-mix(in srgb, var(--primary) 5%, var(--card)), var(--card));
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs); padding: 18px 20px; min-width: 0;
+}
+html.dark .metric { background: var(--card); }
 .metric .k { font-size: 12.5px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 9px; }
 .metric .v { font-size: 26px; font-weight: 500; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .metric .v .unit { font-size: 13px; color: var(--muted-foreground); margin-left: 4px; font-weight: 400; }
@@ -771,9 +808,12 @@ tr.selrow td { background: color-mix(in oklab, var(--muted) 60%, transparent); }
 }
 .livetiles.two { grid-template-columns: repeat(2, 1fr); }
 .ltile, .ftile {
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  background: linear-gradient(to top, color-mix(in srgb, var(--primary) 5%, var(--card)), var(--card));
+  box-shadow: var(--shadow-xs);
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
 }
+html.dark .ltile, html.dark .ftile { background: var(--card); }
 .ltile .lk { font-size: 11.5px; font-weight: 600; color: var(--muted-foreground); display: flex; align-items: center; gap: 7px; }
 .ltile .lv { font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
 .ltile .lv .lmo { font-size: 15px; color: var(--muted-foreground); font-weight: 500; }

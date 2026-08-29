@@ -17,6 +17,22 @@ const FULL = (() => {
   return localStorage.getItem("c0.full") === "1";
 })();
 
+/* iconos de nav (lucide outline, 16px) — anatomia del template shadcn admin */
+const _nsvg = p => `<svg class="navico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const NAV_ICONS = {
+  home: _nsvg('<path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>'),
+  hours: _nsvg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'),
+  classes: _nsvg('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/>'),
+  grow: _nsvg('<path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/>'),
+  pipeline: _nsvg('<rect x="3" y="4" width="5" height="13" rx="1"/><rect x="10" y="4" width="5" height="9" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/>'),
+  campaigns: _nsvg('<path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/>'),
+  keep: _nsvg('<path d="M19 14c1.5-1.5 2-3.2 2-5a5 5 0 0 0-9-3 5 5 0 0 0-9 3c0 1.8.5 3.5 2 5l7 7 7-7z"/>'),
+  paidmedia: _nsvg('<path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="12" y="6" width="3" height="11"/><rect x="17" y="12" width="3" height="5"/>'),
+  pulsereport: _nsvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 15h8M8 11h3"/>'),
+  engine: _nsvg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+  _: _nsvg('<circle cx="12" cy="12" r="2"/>'),
+};
+
 const SECTIONS_SIMPLE = [
   { group: "Your gym · live" },
   { id: "home", label: "Today", badge: () => DATA.today.do.length, hot: true },
@@ -225,11 +241,6 @@ function topbar(title, sub, actions = "") {
   return `<div class="topbar">
     <div><h1>${title}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}</div>
     <div class="sweep">
-      <button class="topsearch" onclick="openCmdk()" aria-label="${tr("Search", "Buscar")}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-        <span class="tslabel">${tr("Search the dashboard...", "Busca en el dashboard...")}</span>
-        <span class="kbd">Ctrl K</span>
-      </button>
       <span class="stamp"><span class="dot"></span>LAST SWEEP ${fmtDate(DATA.meta.sweepDate).toUpperCase()} ${DATA.meta.sweepTime}</span>
       ${actions}
     </div>
@@ -2273,8 +2284,10 @@ function render() {
   $("#nav").innerHTML = SECTIONS.map(s => {
     if (s.group) return `<div class="navgroup">${s.group}</div>`;
     const b = s.badge ? s.badge() : null;
-    return `<a href="#${s.id}" class="${s.id === id ? "active" : ""}">${s.label}${b ? `<span class="n ${s.hot ? "hot" : ""}">${b}</span>` : ""}</a>`;
+    return `<a href="#${s.id}" class="${s.id === id ? "active" : ""}">${NAV_ICONS[s.id] || NAV_ICONS._} <span class="navlbl">${s.label}</span>${b ? `<span class="n ${s.hot ? "hot" : ""}">${b}</span>` : ""}</a>`;
   }).join("");
+  const cs = document.getElementById("crumb-sec");
+  if (cs) cs.textContent = (LANG === "es" && typeof T !== "undefined" && T[SECTIONS.find(s => s.id === id)?.label]) || SECTIONS.find(s => s.id === id)?.label || "Today";
   $("#content").innerHTML = view(arg);
   const tb = $("#content .topbar");
   if (tb && SECTION_DESC[id]) tb.insertAdjacentHTML("afterend", `<div class="secdesc">${SECTION_DESC[id]}</div>`);
