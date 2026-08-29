@@ -10,7 +10,8 @@
 <style>
   .lg { display: grid; grid-template-columns: 1fr 1.2fr; min-height: 100dvh; }
   .lgl { position: relative; overflow: hidden; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
-  .lgl img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .34; filter: saturate(.4); }
+  .lgl .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; filter: saturate(.35) brightness(.85); }
+  @media (prefers-reduced-motion: reduce) { .lgl video.bg { display: none; } }
   .lgl .mark { position: relative; height: 54px; }
   .lgl h1 { position: relative; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
   .lgl p { position: relative; font-size: 13.5px; color: rgba(255,255,255,.65); }
@@ -38,10 +39,12 @@
 <body>
 <div class="lg">
   <div class="lgl">
-    <img class="bg" src="assets/banner.webp" alt="">
+    <video class="bg" autoplay muted loop playsinline poster="assets/banner.webp">
+      <source src="assets/login.mp4" type="video/mp4">
+    </video>
     <img class="mark" src="assets/logo-cz-mark.png" alt="City Zero" onerror="this.remove()">
     <h1>CITY 0 OPS</h1>
-    <p>Your gym, one screen. Login to continue.</p>
+    <p>Operational Dashboard</p>
   </div>
   <div class="lgr">
     <form class="lgbox" onsubmit="event.preventDefault(); czLogin();">
