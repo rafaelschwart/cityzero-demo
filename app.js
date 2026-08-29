@@ -39,6 +39,7 @@ const SECTIONS_SIMPLE = [
   { id: "home", label: "Overview", badge: () => DATA.today.do.length, hot: true },
   { id: "hours", label: "Hours" },
   { id: "classes", label: "Classes" },
+  { id: "calendar", label: "Calendar" },
   { group: "More members" },
   { id: "grow", label: "Grow" },
   { id: "pipeline", label: "Pipeline", badge: () => DATA.pipeline.cards.filter(c => c.breach).length, hot: true },
@@ -71,6 +72,7 @@ const SECTIONS_FULL = [
   { id: "report", label: "Morning Report" },
   { group: "Gym OS · Glofox + BioStar" },
   { id: "classes", label: "Classes" },
+  { id: "calendar", label: "Calendar" },
   { id: "members", label: "Members" },
   { id: "access", label: "Access Control" },
   { group: "Growth" },
@@ -2364,6 +2366,234 @@ function vMeta() {
 
 /* ---------- GYM OS: CLASSES (Glofox API) ---------- */
 
+/* ---------- Classes (port de dashboard/academy: estadísticas por clase) ---------- */
+
+function clsStatsFor(name) {
+  const C = DATA.classes;
+  const li = C.list.find(x => x.name === name) || { cap: 20, coach: "Team coach" };
+  const g = C.grid.find(x => x.cls === name);
+  const slots = g ? g.slots : [12, 14, 13, 15, 12, 10];
+  const waits = g && g.wait ? g.wait : [0, 0, 0, 0, 0, 0];
+  const fills = slots.map(s => Math.min(100, Math.round(s / li.cap * 100)));
+  const avg = Math.round(fills.reduce((a, b) => a + b, 0) / fills.length);
+  const bi = fills.indexOf(Math.max.apply(null, fills));
+  const sess = (DATA.heatmap.classes || []).filter(c => c.name === name).length || 6;
+  return { li, slots, waits, fills, avg, bi, sess, info: (C.info || {})[name] || {}, wsum: waits.reduce((a, b) => a + b, 0) };
+}
+
+function clsStatMount() {
+  const sel = document.getElementById("clsPick");
+  const box = document.getElementById("clsStatBox");
+  if (!sel || !box) return;
+  const name = sel.value;
+  const s = clsStatsFor(name);
+  const days = [tr("Mon", "Lun"), tr("Tue", "Mar"), tr("Wed", "Mié"), tr("Thu", "Jue"), tr("Fri", "Vie"), tr("Sat", "Sáb")];
+  const bars = s.fills.map((f, i) => `
+    <div class="csb" data-tip="${days[i]}: ${s.slots[i]}/${s.li.cap} (${f}%)${s.waits[i] ? " · +" + s.waits[i] + " wait" : ""}">
+      <div class="csbt"><i style="height:${f}%" class="${f >= 95 ? "hot" : f < 55 ? "low" : ""}"></i></div>
+      <span>${days[i]}</span>
+    </div>`).join("");
+  const insight = s.wsum > 0
+    ? tr(`${s.wsum} people are waiting for a spot: demand for another slot already exists.`, `${s.wsum} personas esperan cupo: la demanda para otro horario ya existe.`)
+    : s.avg < 60
+      ? tr(`Room to sell: averages ${s.avg}% full. A push here costs $0 in ads.`, `Espacio por vender: promedia ${s.avg}%. Empujarla cuesta $0 en ads.`)
+      : tr(`Healthy fill at ${s.avg}%. Best day: ${days[s.bi]} at ${s.fills[s.bi]}%.`, `Ocupación sana de ${s.avg}%. Mejor día: ${days[s.bi]} con ${s.fills[s.bi]}%.`);
+  const nm = name.replace(/'/g, "\\'");
+  box.innerHTML = `
+    <div class="csinst">
+      <span class="kbava" style="width:30px;height:30px;font-size:11px">${esc((s.info.inst || s.li.coach || "TC").split(" ").map(w => w[0]).join("").slice(0, 2))}</span>
+      <div><b>${esc(s.info.inst || s.li.coach || "Team coach")}</b><span>${s.info.real ? tr("instructor · REAL", "instructor · REAL") : tr("Team coach · SAMPLE", "Coach del equipo · SAMPLE")} · ${s.info.dur || 50} min</span></div>
+      <button class="btn outline sm" style="margin-left:auto" onclick="openClass('${nm}')">${tr("Open class card", "Abrir ficha")}</button>
+    </div>
+    <div class="csmini">
+      <div><span>${tr("Avg. fill", "Ocupación prom.")}</span><b>${s.avg}%</b></div>
+      <div><span>${tr("Waitlist", "Lista de espera")}</span><b class="${s.wsum ? "amber" : ""}">${s.wsum}</b></div>
+      <div><span>${tr("Sessions / week", "Sesiones / semana")}</span><b>${s.sess}</b></div>
+      <div><span>${tr("Capacity", "Aforo")}</span><b>${s.li.cap}</b></div>
+    </div>
+    <div class="csbars">${bars}</div>
+    <div class="csnote">${insight}</div>`;
+}
+
+function vClassStats() {
+  const C = DATA.classes;
+  const allSlots = C.grid.flatMap((r, ri) => r.slots.map(v => ({ v, cap: (C.list[ri] || { cap: 20 }).cap })));
+  const fill = Math.round(allSlots.reduce((a, x) => a + x.v / x.cap, 0) / allSlots.length * 100);
+  const waitTotal = C.grid.reduce((a, r) => a + (r.wait || []).reduce((x, y) => x + y, 0), 0);
+  const weekCount = (DATA.heatmap.classes || []).length || 36;
+  const atCap = allSlots.filter(x => x.v / x.cap >= 0.95).length;
+  const members = allSlots.reduce((a, x) => a + x.v, 0);
+  const infoIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;color:var(--muted-foreground)"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+  const upIco = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`;
+  const acCard = (t, big, badge, ctx) => `
+    <div class="kpicard ackpi">
+      <div class="ach"><span>${t}</span>${infoIco}</div>
+      <div class="kpirow"><span class="kpiv">${big}</span>${badge ? `<span class="kbadge up" style="border-radius:4px;padding:2px 5px">${upIco}${badge}</span>` : ""}</div>
+      <div class="acctx">${ctx}</div>
+    </div>`;
+
+  const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { weekday: "long", day: "numeric", month: "long" });
+  const todayStr = lf.format(new Date());
+  const nowH = new Date().getHours();
+  const schedRows = DATA.today.classesToday.map(c => {
+    const h24 = parseInt(c.at) + (c.at.indexOf("PM") > 0 && parseInt(c.at) !== 12 ? 12 : 0);
+    const st = c.done ? [tr("Done", "Hecha"), "gray"] : h24 === nowH ? [tr("In Progress", "En curso"), "green"] : c.booked >= c.cap ? [tr("Full", "Llena"), "red"] : [tr("Upcoming", "Próxima"), "amber"];
+    const dur = ((C.info || {})[c.name] || {}).dur || 50;
+    const nm = c.name.replace(/'/g, "\\'");
+    return `
+    <div class="asrow click" onclick="openClass('${nm}', ${c.booked}, ${c.cap}, ${c.wait || 0})">
+      <div class="asl"><i class="asbar ${st[1]}"></i><div class="ast"><b>${esc(c.at)} · ${dur} min</b><span>${todayStr}</span></div></div>
+      <div class="asmid"><b>${esc(c.name)}</b><span>${c.booked}/${c.cap} ${tr("booked", "reservados")}${c.wait ? ` · +${c.wait} ${tr("waitlist", "en espera")}` : ""}</span></div>
+      <span class="asbadge ${st[1]}">${st[0]}</span>
+    </div>`;
+  }).join("");
+
+  const top = C.grid.map(g => {
+    const s = clsStatsFor(g.cls);
+    return { name: g.cls, avg: s.avg, inst: s.info.inst || s.li.coach || "Team" };
+  }).sort((a, b) => b.avg - a.avg).slice(0, 4);
+  const phRows = top.map(t => `
+    <div class="phrow">
+      <span class="phd">${esc(t.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>
+      <div class="phtrack"><i style="width:${t.avg}%"></i><b>${esc(t.name)}</b></div>
+      <span class="phv mono">${t.avg}%</span>
+    </div>`).join("");
+
+  /* próximas instancias reales del horario semanal */
+  const now = new Date();
+  const jsD = (now.getDay() + 6) % 7;
+  const ups = [];
+  for (let off = 0; off < 7 && ups.length < 4; off++) {
+    const d = (jsD + off) % 7;
+    if (d > 5) continue;
+    (DATA.heatmap.classes || []).filter(c => c.d === d && (off > 0 || c.h > now.getHours())).sort((a, b) => a.h - b.h).forEach(c => {
+      if (ups.length >= 4) return;
+      const dt = new Date(now); dt.setDate(now.getDate() + off);
+      const g = C.grid.find(x => x.cls === c.name);
+      const w = g && g.wait ? g.wait[d] || 0 : 0;
+      const isNew = c.name === "Pilates Sculpt" || c.name === "Vinyasa Yoga";
+      ups.push({ name: c.name, h: c.h, dt, tag: w ? [`+${w} ${tr("waitlist", "espera")}`, "amber"] : isNew ? [tr("New slot", "Horario nuevo"), "green"] : null });
+    });
+  }
+  const mfmt = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short" });
+  const ueRows = ups.map(u => `
+    <div class="uerow click" onclick="openClass('${u.name.replace(/'/g, "\\'")}')">
+      <span class="ued"><b>${mfmt.format(u.dt).toUpperCase().replace(".", "")}</b><i>${u.dt.getDate()}</i></span>
+      <div class="uet"><b>${esc(u.name)}</b><span>${u.h % 12 || 12}:00 ${u.h < 12 ? "AM" : "PM"}</span></div>
+      ${u.tag ? `<span class="chip ${u.tag[1]}">${u.tag[0]}</span>` : ""}
+    </div>`).join("");
+
+  const opts = C.list.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
+  setTimeout(clsStatMount, 0);
+  return `
+  ${topbar("Classes", tr("EVERY FORMAT MEASURED: FILL, WAITLISTS AND THE SLOTS WORTH SELLING", "CADA FORMATO MEDIDO: OCUPACIÓN, LISTAS DE ESPERA Y LOS HORARIOS POR VENDER"), modeChip())}
+  <div class="acthdr">
+    <button class="btn outline sm" onclick="location.hash='#inbox'">${tr("Message members", "Mensajear miembros")}</button>
+    <button class="btn outline sm" onclick="location.hash='#hours'">${tr("Occupancy map", "Mapa de ocupación")}</button>
+    <button class="btn solid sm" onclick="toast(tr('Add class', 'Añadir clase'), tr('SAMPLE: class writes go to Glofox after Discovery', 'SAMPLE: las escrituras van a Glofox tras Discovery'))">${KB_I.plus}${tr("Add class", "Añadir clase")}</button>
+  </div>
+  <div class="kpigrid">
+    ${acCard(tr("Class seats filled", "Cupos ocupados"), members, "2.8%", tr("this week, across 8 formats · SAMPLE", "esta semana, en 8 formatos · SAMPLE"))}
+    ${acCard(tr("Avg. fill rate", "Ocupación promedio"), fill + "%", "1.1%", tr("vs last month", "vs el mes pasado"))}
+    ${acCard(tr("Classes this week", "Clases esta semana"), weekCount, "", `${DATA.today.classesToday.length} ${tr("today", "hoy")} · ${atCap} ${tr("at capacity", "a tope")}`)}
+    ${acCard(tr("Waitlist spots", "Lista de espera"), waitTotal, "", tr("Zumba 19 · Cardio Dance 7 · Spin 5", "Zumba 19 · Cardio Dance 7 · Spin 5"))}
+  </div>
+  <div class="acgrid">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Class Schedule", "Horario de clases")}</div>
+        <button class="btn ghost sm" onclick="location.hash='#calendar'">${tr("View Full Schedule", "Ver horario completo")} →</button></div>
+      <div class="asched">${schedRows}</div>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Class Statistics", "Estadísticas por clase")}</div>
+        <select id="clsPick" class="select" style="height:30px;width:auto;font-size:12.5px" onchange="clsStatMount()">${opts}</select></div>
+      <div id="clsStatBox"></div>
+    </div>
+  </div>
+  <div class="acgrid2">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Performance Highlights", "Las que más llenan")}</div>
+        <button class="btn ghost sm" onclick="location.hash='#hours'">${tr("View Insights", "Ver insights")} →</button></div>
+      ${phRows}
+      <p class="ccdesc" style="margin-top:10px">${tr("Average fill across the week · SAMPLE volumes on the real public schedule", "Ocupación promedio de la semana · volúmenes SAMPLE sobre el horario público real")}</p>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Upcoming", "Próximas")}</div>
+        <button class="btn ghost sm" onclick="location.hash='#calendar'">${tr("View Calendar", "Ver calendario")} →</button></div>
+      ${ueRows}
+    </div>
+  </div>
+  ${demoNote()}`;
+}
+
+/* ---------- Calendar (port de dashboard/calendar: grilla mensual) ---------- */
+
+let CAL_OFF = 0, CAL_FILTER = "all";
+function calNav(d) { CAL_OFF += d; render(); }
+function calToday() { CAL_OFF = 0; render(); }
+function calFilter(v) { CAL_FILTER = v; render(); }
+
+function vCalendar() {
+  const C = DATA.classes;
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth() + CAL_OFF, 1);
+  const dim = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const lead = first.getDay(); // domingo = 0, como FullCalendar
+  const weekly = (DATA.heatmap.classes || []).filter(c => CAL_FILTER === "all" || c.name === CAL_FILTER);
+  const byDow = {};
+  weekly.forEach(c => { (byDow[c.d] = byDow[c.d] || []).push(c); });
+  Object.values(byDow).forEach(l => l.sort((a, b) => a.h - b.h));
+  const fmtT = h => `${h % 12 || 12}${h < 12 ? "a" : "p"}`;
+  let events = 0;
+  let cells = "";
+  const total = Math.ceil((lead + dim) / 7) * 7;
+  for (let i = 0; i < total; i++) {
+    const dayN = i - lead + 1;
+    if (dayN < 1 || dayN > dim) { cells += `<div class="mcell off"></div>`; continue; }
+    const dt = new Date(first.getFullYear(), first.getMonth(), dayN);
+    const dow = (dt.getDay() + 6) % 7; // 0 = lunes; 6 = domingo (sin clases)
+    const list = dow <= 5 ? (byDow[dow] || []) : [];
+    events += list.length;
+    const isToday = CAL_OFF === 0 && dayN === now.getDate();
+    const shown = list.slice(0, 3).map(c => `
+      <div class="mev click" onclick="openClass('${c.name.replace(/'/g, "\\'")}')" data-tip="${esc(c.name)} · ${c.h % 12 || 12}:00 ${c.h < 12 ? "AM" : "PM"}">
+        <span class="men">${esc(c.name)}</span><span class="met mono">${fmtT(c.h)}</span>
+      </div>`).join("");
+    const more = list.length > 3 ? `<div class="mevmore" data-tip="${esc(list.slice(3).map(c => `${c.name} ${fmtT(c.h)}`).join(" · "))}">+${list.length - 3} ${tr("more", "más")}</div>` : "";
+    cells += `<div class="mcell${isToday ? " istoday" : ""}"><span class="mnum mono">${dayN}</span>${shown}${more}</div>`;
+  }
+  const title = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "long", year: "numeric" }).format(first);
+  const dows = [tr("Sun", "Dom"), tr("Mon", "Lun"), tr("Tue", "Mar"), tr("Wed", "Mié"), tr("Thu", "Jue"), tr("Fri", "Vie"), tr("Sat", "Sáb")];
+  const opts = C.list.map(c => `<option value="${esc(c.name)}"${CAL_FILTER === c.name ? " selected" : ""}>${esc(c.name)}</option>`).join("");
+  return `
+  ${topbar("Calendar", tr("EVERY CLASS OF THE MONTH, STRAIGHT FROM THE WEEKLY SCHEDULE", "CADA CLASE DEL MES, DIRECTO DEL HORARIO SEMANAL"), modeChip())}
+  <div class="mcal">
+    <div class="mcalhdr">
+      <div class="mchl">
+        <b>${title.charAt(0).toUpperCase() + title.slice(1)}</b>
+        <span>${dim} ${tr("days", "días")} - ${events} ${tr("events", "eventos")}</span>
+      </div>
+      <div class="mchr">
+        <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="calFilter(this.value)">
+          <option value="all"${CAL_FILTER === "all" ? " selected" : ""}>${tr("All classes", "Todas las clases")}</option>${opts}
+        </select>
+        <span class="btngrp">
+          <button class="btn outline sm sq" onclick="calNav(-1)">${KB_I.chevD.replace("m6 9 6 6 6-6", "m15 18-6-6 6-6")}</button>
+          <button class="btn outline sm" style="border-radius:0;border-left:0;border-right:0" onclick="calToday()">${tr("Today", "Hoy")}</button>
+          <button class="btn outline sm sq" onclick="calNav(1)">${KB_I.chevD.replace("m6 9 6 6 6-6", "m9 18 6-6-6-6")}</button>
+        </span>
+        <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Views', 'Vistas'), tr('Month is the demo view; week and day ship with the real build', 'Mes es la vista demo; semana y día llegan con el build real')); this.selectedIndex=0">
+          <option selected>${tr("Month", "Mes")}</option><option>${tr("Week", "Semana")}</option><option>${tr("Day", "Día")}</option>
+        </select>
+        <button class="btn solid sm" onclick="toast(tr('Add event', 'Añadir evento'), tr('SAMPLE: schedule writes go to Glofox after Discovery', 'SAMPLE: las escrituras al horario van a Glofox tras Discovery'))">${KB_I.plus}${tr("Add event", "Añadir evento")}</button>
+      </div>
+    </div>
+    <div class="mdows">${dows.map(d => `<div>${d}</div>`).join("")}</div>
+    <div class="mgrid">${cells}</div>
+  </div>
+  ${demoNote()}`;
+}
+
 function vClasses() {
   const C = DATA.classes;
   const allSlots = C.grid.flatMap((r, ri) => r.slots.map((v, i) => ({ v, cap: C.list[ri].cap })));
@@ -2998,13 +3228,14 @@ const VIEWS = {
   pipeline: vPipeline, leads: vLeads, members: vMembers, profile: vProfile,
   workflows: vWorkflows, triggers: vTriggers, tasks: vTasks,
   analytics: vAnalytics, pulsereport: vPulseReport, paidmedia: vPaidMedia, meta: vMeta, integrations: vIntegrations, audit: vAudit,
-  classes: vClasses, access: vAccess, campaigns: vCampaigns, landing: vLanding,
+  classes: vClassStats, calendar: vCalendar, access: vAccess, campaigns: vCampaigns, landing: vLanding,
 };
 
 /* banner tematico por seccion (Higgsfield, mismo lenguaje del hero de Today) */
 const SEC_HEROES = {
   hours: ["When your gym is full, and when it is empty", "Cuándo está lleno, y cuándo vacío"],
-  classes: ["The week, class by class", "La semana, clase por clase"],
+  classes: ["Every class, measured", "Cada clase, medida"],
+  calendar: ["The week, class by class", "La semana, clase por clase"],
   grow: ["The road to 500 members", "El camino a 500 miembros"],
   pipeline: ["No lead goes cold", "Ningún lead se enfría"],
   campaigns: ["Follow-up that runs itself", "Seguimiento que corre solo"],
@@ -3019,7 +3250,7 @@ function heroFor(id) {
   const label = SECTIONS.find(s => s.id === id)?.label || "";
   return `
   <div class="hero sec">
-    <img src="assets/banners/${id}.webp" alt="" onerror="this.closest('.hero').remove()">
+    <img src="assets/banners/${id === "calendar" ? "classes" : id}.webp" alt="" onerror="this.closest('.hero').remove()">
     <div class="heroshade"></div>
     <div class="herotxt"><span class="mono">CITY ZERO · ${esc(label.toUpperCase())}</span><b>${tr(h[0], h[1])}</b></div>
   </div>`;
