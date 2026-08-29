@@ -44,7 +44,7 @@
     <p>Your gym, one screen. Login to continue.</p>
   </div>
   <div class="lgr">
-    <form class="lgbox" onsubmit="event.preventDefault(); location.href='index.html';">
+    <form class="lgbox" onsubmit="event.preventDefault(); czLogin();">
       <h2>Login</h2>
       <div class="sub">Welcome back. The floor, the road to 500 and today's decisions are waiting.</div>
       <label for="em">Email Address</label>
@@ -53,7 +53,7 @@
       <input id="pw" type="password" placeholder="········" autocomplete="current-password">
       <label class="lgrem"><input type="checkbox"> Remember me for 30 days</label>
       <button class="lgbtn pri" type="submit">Login</button>
-      <button class="lgbtn sec" type="button" onclick="location.href='index.html'">
+      <button class="lgbtn sec" type="button" onclick="czLogin()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.35 11.1H12v2.9h5.3c-.5 2.5-2.6 3.9-5.3 3.9a5.9 5.9 0 1 1 0-11.8c1.5 0 2.8.5 3.8 1.4l2.2-2.2A9 9 0 1 0 12 21c5.2 0 8.9-3.6 8.9-8.8 0-.4 0-.7-.1-1.1z"/></svg>
         Continue with Google
       </button>
@@ -62,5 +62,13 @@
     </form>
   </div>
 </div>
+<script>
+  function czLogin() {
+    localStorage.setItem("c0.auth", "1");
+    let h = "";
+    try { h = sessionStorage.getItem("c0.after") || ""; sessionStorage.removeItem("c0.after"); } catch (e) { }
+    location.href = "index.html" + h;
+  }
+</script>
 </body>
 </html>

@@ -3,6 +3,19 @@
    strings (exact map + regex list for dynamic strings), plus tr() for
    strings created at runtime (toasts, dialogs). Persisted in localStorage. */
 
+/* Puerta de login del demo: sin sesión (c0.auth) el dashboard redirige a
+   login.html (cualquier credencial entra; el hash pendiente se conserva).
+   QA/deep-links: ?auth=1 abre sesión directo, ?auth=0 la cierra. */
+(function () {
+  const q = new URLSearchParams(location.search);
+  if (q.get("auth") === "0") localStorage.removeItem("c0.auth");
+  if (q.get("auth") === "1") localStorage.setItem("c0.auth", "1");
+  if (!localStorage.getItem("c0.auth")) {
+    try { sessionStorage.setItem("c0.after", location.hash || ""); } catch (e) { }
+    location.replace("login.html");
+  }
+})();
+
 let LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("c0.lang") || "en";
 
 /* tema dual (template next-shadcn-admin-dashboard-v1): dark = default de marca */
