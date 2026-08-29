@@ -1602,3 +1602,7 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .actwrap { position: relative; padding-top: 26px; }
 .actlegs { position: absolute; top: 0; right: 4px; display: flex; gap: 16px; }
 .actsvg { height: 300px; }
+@keyframes avpop { from { opacity: 0; transform: translateY(-4px) scale(.97); } }
+.avmenu { transform-origin: top right; }
+.avmenu.open { animation: avpop .16s ease-out; }
+@media (prefers-reduced-motion: reduce) { .avmenu.open { animation: none; } }
