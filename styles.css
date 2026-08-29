@@ -14,27 +14,28 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* light: los valores EXACTOS de globals.css del template (neutros puros) */
-  --background: oklch(1 0 0);
+  /* light con profundidad (pedido Rafa 29.08): canvas gris claro, cards casi
+     blancas que se despegan, sidebar gris más oscuro. Nada de blanco plano. */
+  --background: oklch(0.955 0 0);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.995 0 0);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.995 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.925 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --muted: oklch(0.925 0 0);
+  --muted-foreground: oklch(0.49 0 0);
+  --accent: oklch(0.91 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --border: oklch(0.878 0 0);
+  --input: oklch(0.878 0 0);
+  --ring: oklch(0.65 0 0);
+  --sidebar: oklch(0.925 0 0);
+  --sidebar-accent: oklch(0.87 0 0);
 
   /* semantic status: legibles sobre claro */
   --red: #dc2626;
@@ -55,9 +56,9 @@
   --font: "Geist", ui-sans-serif, system-ui, sans-serif;
   --mono: "Geist Mono", ui-monospace, monospace;
   --sidebar-w: 244px;
-  --shadow-xs: 0 1px 2px 0 rgba(16,24,40,.06);
-  --shadow-sm: 0 1px 3px 0 rgba(16,24,40,.08), 0 1px 2px -1px rgba(16,24,40,.06);
-  --shadow-lg: 0 10px 15px -3px rgba(16,24,40,.10), 0 4px 6px -4px rgba(16,24,40,.08);
+  --shadow-xs: 0 1px 2px 0 rgba(16,24,40,.08);
+  --shadow-sm: 0 1px 3px 0 rgba(16,24,40,.12), 0 1px 2px -1px rgba(16,24,40,.08);
+  --shadow-lg: 0 12px 20px -4px rgba(16,24,40,.15), 0 4px 8px -4px rgba(16,24,40,.08);
 }
 
 .dark {
@@ -1830,3 +1831,14 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .crm { display: flex; gap: 12px; margin-top: 7px; font-size: 11px; color: var(--muted-foreground); flex-wrap: wrap; }
 .chip.red { color: var(--red); border-color: color-mix(in oklab, var(--red) 40%, transparent); background: color-mix(in oklab, var(--red) 10%, transparent); }
 @media (max-width: 1100px) { .crgrid { grid-template-columns: 1fr 1fr; } }
+
+/* profundidad en light: las superficies elevadas cargan sombra real */
+html:not(.dark) .crmcard, html:not(.dark) .kpicard, html:not(.dark) .astiles,
+html:not(.dark) .panel, html:not(.dark) .metric, html:not(.dark) .mcal,
+html:not(.dark) .kbcol, html:not(.dark) .ltile, html:not(.dark) .ftile,
+html:not(.dark) .crcard, html:not(.dark) .stcells, html:not(.dark) .repnote,
+html:not(.dark) .mcard, html:not(.dark) .scard, html:not(.dark) .chartpanel,
+html:not(.dark) .donutpanel { box-shadow: var(--shadow-sm); }
+html:not(.dark) .kbtask, html:not(.dark) .mev { box-shadow: var(--shadow-xs); }
+html:not(.dark) .kbtask { background: var(--card); }
+html:not(.dark) .tabs { background: oklch(0.9 0 0); }
