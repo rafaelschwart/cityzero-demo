@@ -1455,9 +1455,235 @@ function vStart() {
   ${demoNote()}`;
 }
 
-/* ---------- CRM ---------- */
+/* ---------- CRM (template port: Overview / Board / List) ---------- */
+
+let PIPE_VIEW = localStorage.getItem("c0.pipeview") || "overview";
+let PIPE_PAGE = 0;
+
+function setPipeView(v) { PIPE_VIEW = v; PIPE_PAGE = 0; localStorage.setItem("c0.pipeview", v); render(); }
+
+function leadHealth(c) {
+  if (c.breach) return { key: "at-risk", label: tr("At Risk", "En riesgo"), score: 7 };
+  if (c.stage !== "member" && c.days >= 9) return { key: "on-hold", label: tr("On Hold", "En pausa"), score: 4 };
+  if (c.stage !== "member" && (c.days >= 6 || (c.stage === "new" && c.days >= 2))) return { key: "needs-review", label: tr("Needs Review", "Necesita revisión"), score: 11 };
+  return { key: "on-track", label: tr("On Track", "En curso"), score: 18 };
+}
+
+function leadValue(c) { return [1560, 1900, 2160, 2400][_mhash(c.name) % 4]; }
+function fmtMoney(v) { return "$" + v.toLocaleString("en-US"); }
+function pipePri(c) {
+  if (c.breach || c.days <= 1) return [tr("High", "Alta"), "red"];
+  if (c.days <= 4) return [tr("Medium", "Media"), "amber"];
+  return [tr("Low", "Baja"), "gray"];
+}
+
+const CRM_I = {
+  arrUR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>`,
+  tUp: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+  tDn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`,
+  cal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`,
+  pen: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`,
+  chL: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`,
+  chR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`,
+};
+
+function pipeTabs() {
+  const t = [["overview", tr("Overview", "Resumen")], ["board", tr("Board", "Tablero")], ["list", tr("List", "Lista")]];
+  return `<div class="tabs" style="margin-bottom:16px">${t.map(([k, l]) =>
+    `<button class="tab${PIPE_VIEW === k ? " on" : ""}" onclick="setPipeView('${k}')">${l}</button>`).join("")}</div>`;
+}
+
+function kpiCard(desc, big, dir, delta, last) {
+  return `<div class="kpicard">
+    <div class="kpitop"><span>${desc}</span>${CRM_I.arrUR}</div>
+    <div class="kpirow"><span class="kpiv">${big}</span><span class="kbadge ${dir}">${dir === "up" ? CRM_I.tUp : CRM_I.tDn}${delta}</span></div>
+    <div class="kpilast"><b>${last}</b> ${tr("last month", "mes pasado")}</div>
+  </div>`;
+}
+
+function pipeTableRows(cards) {
+  return cards.map(c => {
+    const h = leadHealth(c), pri = pipePri(c);
+    const idx = DATA.pipeline.cards.indexOf(c) + 1;
+    const stage = DATA.pipeline.stages.find(s => s.key === c.stage);
+    const strip = Array.from({ length: 18 }, (_, k) => `<i class="${k < h.score ? "on" : ""}"></i>`).join("");
+    const nm = c.name.replace(/'/g, "\\'");
+    return `<tr>
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="ck" aria-label="Select ${esc(c.name)}"></td>
+      <td class="mono" style="font-size:12.5px">LD-${String(idx).padStart(3, "0")}</td>
+      <td class="t" style="white-space:nowrap">${esc(c.name)}</td>
+      <td><span class="pill">${esc(stage ? stage.label : c.stage)}</span></td>
+      <td style="color:var(--${pri[1] === "gray" ? "muted-foreground" : pri[1]})">${pri[0]}</td>
+      <td><div class="hstrip" data-tip="${h.label}">${strip}</div></td>
+      <td class="mono">${fmtMoney(leadValue(c))}</td>
+      <td style="text-align:right"><button class="btn ghost xs pedit" data-tip="${tr("Open lead", "Abrir lead")}" onclick="openLead('${nm}')">${CRM_I.pen.replace("<svg", "<svg style='width:14px;height:14px'")}</button></td>
+    </tr>`;
+  }).join("");
+}
+
+function pipeListFilter() {
+  const p = DATA.pipeline;
+  const q = (document.getElementById("pipeq") ? document.getElementById("pipeq").value : "").toLowerCase();
+  const st = document.getElementById("pipestage") ? document.getElementById("pipestage").value : "all";
+  const hl = document.getElementById("pipehealth") ? document.getElementById("pipehealth").value : "all";
+  const rows = p.cards.filter(c =>
+    (!q || c.name.toLowerCase().includes(q) || c.source.toLowerCase().includes(q)) &&
+    (st === "all" || c.stage === st) && (hl === "all" || leadHealth(c).key === hl));
+  const pages = Math.max(1, Math.ceil(rows.length / 10));
+  if (PIPE_PAGE >= pages) PIPE_PAGE = pages - 1;
+  if (PIPE_PAGE < 0) PIPE_PAGE = 0;
+  const view = rows.slice(PIPE_PAGE * 10, PIPE_PAGE * 10 + 10);
+  const tb = document.getElementById("pipetbody");
+  if (!tb) return;
+  tb.innerHTML = pipeTableRows(view) || `<tr><td colspan="8" style="text-align:center;padding:34px 0;color:var(--muted-foreground)">${tr("No results.", "Sin resultados.")}</td></tr>`;
+  document.getElementById("pipecount").textContent = tr(`Viewing ${view.length} out of ${rows.length} leads`, `Viendo ${view.length} de ${rows.length} leads`);
+  let pg = `<button class="pgb${PIPE_PAGE === 0 ? " off" : ""}" onclick="pipePg(-1)">${CRM_I.chL}${tr("Previous", "Anterior")}</button>`;
+  for (let i = 0; i < pages; i++) pg += `<button class="pgb num${i === PIPE_PAGE ? " on" : ""}" onclick="pipePgTo(${i})">${i + 1}</button>`;
+  pg += `<button class="pgb${PIPE_PAGE >= pages - 1 ? " off" : ""}" onclick="pipePg(1)">${tr("Next", "Siguiente")}${CRM_I.chR}</button>`;
+  document.getElementById("pipepgn").innerHTML = pg;
+}
+function pipePg(d) { PIPE_PAGE += d; pipeListFilter(); }
+function pipePgTo(i) { PIPE_PAGE = i; pipeListFilter(); }
+
+function crmOverview(p) {
+  const g = DATA.grow;
+  const open = p.cards.filter(c => c.stage !== "member");
+  const value = open.reduce((s, c) => s + leadValue(c), 0);
+  const l2t = Math.round(g.funnel[1].n / g.funnel[0].n * 1000) / 10;
+  const l2m = Math.round(g.funnel[2].n / g.funnel[0].n * 1000) / 10;
+  const loc = (typeof LANG !== "undefined" && LANG === "es") ? "es" : "en-US";
+  const mfmt = new Intl.DateTimeFormat(loc, { month: "short" });
+  const max = Math.max.apply(null, p.flow);
+  const now = new Date();
+  const months = p.flow.map((v, i) => mfmt.format(new Date(now.getFullYear(), now.getMonth() - (p.flow.length - 1 - i), 1)));
+  const total = p.flow.reduce((a, b) => a + b, 0);
+  const tPct = Math.round(p.toursBooked / total * 100);
+  const bars = p.flow.map((v, i) => `<div class="cfcol" data-tip="${months[i]} · ${v} leads"><div class="cfbar" style="height:${Math.round(v / max * 100)}%"></div></div>`).join("");
+  const today = g.tours.filter(t => t.when.indexOf("Today") === 0 || t.when.indexOf("Hoy") === 0);
+  const t1 = today[0] || g.tours[0];
+  const jg = p.joinsGoal;
+  const active = Math.round(jg.done / jg.target * 42);
+  const goalBars = Array.from({ length: 42 }, (_, i) => `<i class="${i < active ? "on" : ""}"></i>`).join("");
+
+  return `
+  <section class="crmhead">
+    <h2>${tr("Pipeline Overview", "Resumen del pipeline")}</h2>
+    <p>${tr("Keep tabs on lead quality, open tours, and conversion across the current sales cycle.", "Calidad de leads, tours abiertos y conversión del ciclo de venta actual.")} <span class="chip gray" style="vertical-align:1px">SAMPLE</span></p>
+  </section>
+  <div class="kpigrid">
+    ${kpiCard(tr("Lead Pipeline Value", "Valor del pipeline"), fmtMoney(value), "up", "+12%", fmtMoney(Math.round(value * 0.89 / 100) * 100))}
+    ${kpiCard(tr("Lead-to-Tour Rate", "Tasa lead a tour"), l2t + "%", "down", "-2.5%", (l2t + 2.5).toFixed(1) + "%")}
+    ${kpiCard(tr("Open Leads", "Leads abiertos"), open.length, "up", "+3", open.length - 3)}
+    ${kpiCard(tr("Lead-to-Member Rate", "Tasa lead a miembro"), l2m + "%", "up", "+1.6%", (l2m - 1.6).toFixed(1) + "%")}
+  </div>
+
+  <div class="crmcard">
+    <div class="cchead">
+      <div class="cctitle">${tr("Lead Flow", "Flujo de leads")}</div>
+      <select class="select" style="height:30px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The sample dataset covers the last 12 months','El dataset sample cubre los últimos 12 meses')); this.selectedIndex=2">
+        <option>${tr("Last 30 days", "Últimos 30 días")}</option><option>${tr("Last quarter", "Último trimestre")}</option><option selected>${tr("Last 12 months", "Últimos 12 meses")}</option>
+      </select>
+    </div>
+    <div class="ccbody">
+      <div class="cflowwrap">
+        <div class="cflow">${bars}</div>
+        <div class="cflowx">${months.map(m => `<span>${m}</span>`).join("")}</div>
+      </div>
+      <div class="crail">
+        <div>
+          <div class="crailbig">${total} <span>leads</span></div>
+          <div class="crailsub" style="margin-top:6px">${tr("Total leads captured over the last 12 months.", "Total de leads capturados en los últimos 12 meses.")}</div>
+        </div>
+        <div class="railbox">
+          <div class="railk">${tr("Tours booked", "Tours agendados")}</div>
+          <div>
+            <div class="railn">${p.toursBooked} <span>tours</span></div>
+            <div class="crailsub" style="margin-top:5px">${tr(tPct + "% of leads booked a tour.", tPct + "% de los leads agendaron tour.")}</div>
+          </div>
+          <div class="progress" style="height:9px"><div class="bar" style="width:${tPct}%"></div></div>
+          <div class="railf"><b>${p.toursBooked} ${tr("booked", "agendados")}</b><span>${total} ${tr("captured", "capturados")}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="crmrow2" style="margin-bottom:16px">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead">
+        <div class="cctitle">${tr("Upcoming Tours", "Próximos tours")}</div>
+        <button class="btn outline sm" onclick="location.hash='#classes'">${CRM_I.cal.replace("<svg", "<svg style='width:14px;height:14px'")} ${tr("View Classes", "Ver clases")}</button>
+      </div>
+      <div class="tlticks"><div><span>4:45 PM</span><i></i></div><div><span>5:00 PM</span><i></i></div><div><span>6:00 PM</span><i></i></div><div><span>6:20 PM</span><i></i></div></div>
+      <div class="tlarea">
+        <div class="tlline"></div>
+        <div class="tlchip" onclick="location.hash='#grow'" data-tip="${tr("All tours live in Grow", "Los tours viven en Grow")}">
+          <span class="ico">${CRM_I.cal.replace("<svg", "<svg style='width:14px;height:14px'")}</span>
+          <span style="min-width:0"><span class="tn" style="display:block">${tr("Tour with", "Tour con")} ${esc(t1.name)}</span><span class="ts" style="display:block">${tr("Guided tour form", "Formulario de tour")} · ${esc(t1.when)}${t1.confirmed ? "" : " · " + tr("unconfirmed", "sin confirmar")}</span></span>
+        </div>
+        <div class="tlmark"></div>
+      </div>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead" style="margin-bottom:8px"><div class="cctitle">${tr("Monthly Joins Goal", "Meta de altas del mes")}</div></div>
+      <div class="goalhead">
+        <div class="goaln">${jg.done} <span>${tr("joined", "altas")}</span></div>
+        <div class="goalt">${jg.target} ${tr("target", "meta")}</div>
+      </div>
+      <div class="goalbars">${goalBars}</div>
+      <div class="goalsub">${Math.round(jg.done / jg.target * 100)}${tr("% of this month's join target reached.", "% de la meta de altas del mes alcanzada.")}</div>
+    </div>
+  </div>
+
+  <div class="crmcard">
+    <div class="cchead">
+      <div>
+        <div class="cctitle">${tr("Recent Leads", "Leads recientes")}</div>
+        <div class="ccdesc">${tr("Leads moving through tour, trial and joining stages.", "Leads moviéndose por tour, trial y alta.")}</div>
+      </div>
+      <button class="btn ghost sm" onclick="setPipeView('list')">${tr("Open list view", "Abrir vista lista")} →</button>
+    </div>
+    <div class="tablewrap"><table class="crmtable">
+      <thead><tr><th style="width:34px"></th><th>ID</th><th>${tr("Lead", "Lead")}</th><th>${tr("Stage", "Etapa")}</th><th>${tr("Priority", "Prioridad")}</th><th>${tr("Health", "Salud")}</th><th>${tr("Value", "Valor")}</th><th style="text-align:right">${tr("Edit", "Editar")}</th></tr></thead>
+      <tbody>${pipeTableRows(p.cards.slice(0, 6))}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function crmList(p) {
+  setTimeout(pipeListFilter, 0);
+  return `
+  <div class="crmcard">
+    <div class="cchead" style="flex-wrap:wrap">
+      <div>
+        <div class="cctitle">${tr("Recent Leads", "Leads recientes")}</div>
+        <div class="ccdesc">${tr("Track leads moving through tour, trial and joining stages.", "Sigue los leads por tour, trial y alta.")}</div>
+      </div>
+      <div class="ccact">
+        <input id="pipeq" class="input" style="height:28px;width:190px;font-size:12.5px" placeholder="${tr("Search leads...", "Buscar leads...")}" oninput="PIPE_PAGE=0;pipeListFilter()">
+        <select id="pipestage" class="select" style="height:28px;width:auto;font-size:12.5px" onchange="PIPE_PAGE=0;pipeListFilter()">
+          <option value="all">${tr("All stages", "Todas las etapas")}</option>
+          ${p.stages.map(s => `<option value="${s.key}">${esc(s.label)}</option>`).join("")}
+        </select>
+        <select id="pipehealth" class="select" style="height:28px;width:auto;font-size:12.5px" onchange="PIPE_PAGE=0;pipeListFilter()">
+          <option value="all">${tr("All health", "Toda salud")}</option>
+          <option value="on-track">${tr("On Track", "En curso")}</option>
+          <option value="needs-review">${tr("Needs Review", "Necesita revisión")}</option>
+          <option value="at-risk">${tr("At Risk", "En riesgo")}</option>
+          <option value="on-hold">${tr("On Hold", "En pausa")}</option>
+        </select>
+      </div>
+    </div>
+    <div class="tablewrap"><table class="crmtable">
+      <thead><tr><th style="width:34px"></th><th>ID</th><th>${tr("Lead", "Lead")}</th><th>${tr("Stage", "Etapa")}</th><th>${tr("Priority", "Prioridad")}</th><th>${tr("Health", "Salud")}</th><th>${tr("Value", "Valor")}</th><th style="text-align:right">${tr("Edit", "Editar")}</th></tr></thead>
+      <tbody id="pipetbody"></tbody>
+    </table></div>
+    <div class="ccfoot"><p id="pipecount"></p><div class="pgn" id="pipepgn"></div></div>
+  </div>`;
+}
 
 function vPipeline() {
+  const qv = new URLSearchParams(location.search).get("pview");
+  if (qv && ["overview", "board", "list"].indexOf(qv) >= 0 && !vPipeline._qs) { PIPE_VIEW = qv; vPipeline._qs = true; }
   const p = DATA.pipeline;
   const live = JSON.parse(localStorage.getItem("c0.leads") || "[]");
   live.forEach(l => {
@@ -1494,18 +1720,29 @@ function vPipeline() {
     </div>`;
   }).join("");
 
+  let body;
+  if (PIPE_VIEW === "board") {
+    body = `
+    <div class="metrics">
+      <div class="metric"><div class="k">${tr("Leads on board", "Leads en tablero")}</div><div class="v">${p.cards.length}</div><div class="s">${tr("Sample volume", "Volumen sample")}</div></div>
+      <div class="metric"><div class="k">${tr("SLA breaches", "SLA vencidos")}</div><div class="v red">${breaches}</div><div class="s">${tr("Idle past 48h in New", "Más de 48h sin tocar en New")}</div></div>
+      <div class="metric"><div class="k">${tr("Stages", "Etapas")}</div><div class="v">${p.stages.length}</div><div class="s">${tr("New to Member, each with its own SLA", "De New a Member, cada una con su SLA")}</div></div>
+      <div class="metric"><div class="k">${tr("Channels feeding in", "Canales que alimentan")}</div><div class="v">${DATA.leadChannels.length}</div><div class="s">${tr("All real: see Lead Channels", "Todos reales: ver Lead Channels")}</div></div>
+    </div>
+    <div class="grid"><div class="panel wide">
+      <div class="ptitle">${tr("Board", "Tablero")} <span class="hint">${tr("names and volumes are sample; stages, SLAs, channels and roles are the real design", "nombres y volúmenes sample; etapas, SLAs, canales y roles son el diseño real")}</span></div>
+      <div class="kanban">${cols}</div>
+    </div></div>`;
+  } else if (PIPE_VIEW === "list") {
+    body = crmList(p);
+  } else {
+    body = crmOverview(p);
+  }
+
   return `
   ${topbar("Pipeline", "EVERY LEAD, ONE BOARD, AN OWNER AND A CLOCK ON EACH", p2chip())}
-  <div class="metrics">
-    <div class="metric"><div class="k">Leads on board</div><div class="v">${p.cards.length}</div><div class="s">Sample volume</div></div>
-    <div class="metric"><div class="k">SLA breaches</div><div class="v red">${breaches}</div><div class="s">Idle past 48h in New</div></div>
-    <div class="metric"><div class="k">Stages</div><div class="v">${p.stages.length}</div><div class="s">New to Member, each with its own SLA</div></div>
-    <div class="metric"><div class="k">Channels feeding in</div><div class="v">${DATA.leadChannels.length}</div><div class="s">All real: see Lead Channels</div></div>
-  </div>
-  <div class="grid"><div class="panel wide">
-    <div class="ptitle">Board <span class="hint">names and volumes are sample; stages, SLAs, channels and roles are the real design</span></div>
-    <div class="kanban">${cols}</div>
-  </div></div>
+  ${pipeTabs()}
+  ${body}
   ${demoNote()}`;
 }
 

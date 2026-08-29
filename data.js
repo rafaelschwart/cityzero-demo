@@ -517,6 +517,10 @@ const DATA = {
       { name: "Kevin D.", source: "Instagram DM", stage: "member", days: 12, owner: "Front desk", next: "Day-30 check-in scheduled" },
       { name: "Sofia L.", source: "Wellhub", stage: "member", days: 25, owner: "Front desk", next: "Ask for a Google review" },
     ],
+    /* CRM overview (template port). SAMPLE: 12-month lead flow, tours booked, monthly joins goal. */
+    flow: [26, 31, 24, 38, 33, 41, 36, 30, 48, 37, 34, 42],
+    toursBooked: 148,
+    joinsGoal: { done: 14, target: 20 },
   },
   leadChannels: [
     { channel: "Website form (contact)", real: true, evidence: "Live on cityzero.com with reCAPTCHA" },
