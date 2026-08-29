@@ -2409,7 +2409,7 @@ function clsStatMount() {
       <div><span>${tr("Avg. fill", "Ocupación prom.")}</span><b>${s.avg}%</b></div>
       <div><span>${tr("Waitlist", "Lista de espera")}</span><b class="${s.wsum ? "amber" : ""}">${s.wsum}</b></div>
       <div><span>${tr("Sessions / week", "Sesiones / semana")}</span><b>${s.sess}</b></div>
-      <div><span>${tr("Capacity", "Aforo")}</span><b>${s.li.cap}</b></div>
+      <div><span>${tr("Capacity per class", "Capacidad por clase")}</span><b>${s.li.cap} ${tr("spots", "cupos")}</b></div>
     </div>
     <div class="csbars">${bars}</div>
     <div class="csnote">${insight}</div>`;
@@ -2966,6 +2966,11 @@ function vPulseReport() {
   return `
   ${topbar("Pulse Report", `<span class="pulse-mark">● PULSE · METRICS</span> monthly client report · ${esc(r.periodLabel)}`, `<span class="chip amber">MOCKUP · SAMPLE SCENARIO</span>`)}
 
+  <div class="repnote">
+    <span class="chip amber">${tr("CLIENT DELIVERABLE · ONCE A MONTH", "ENTREGABLE AL CLIENTE · UNA VEZ AL MES")}</span>
+    <p><b>${tr("What you are looking at:", "Qué estás viendo:")}</b> ${tr("the document City Zero receives every month: the closed period explained, with health score, real cost per member and next month's plan. The live day-to-day cockpit while campaigns run is the", "el documento que City Zero recibe cada mes: el período cerrado explicado, con health score, costo real por miembro y el plan del mes siguiente. La cabina diaria en vivo mientras corren las campañas es el")} <a href="#paidmedia">${tr("Ads Report", "Reporte de Ads")} →</a></p>
+  </div>
+
   <div class="grid"><div class="panel wide pwow">
     <div class="pwgrid">
       <div class="pwring">
@@ -3091,18 +3096,99 @@ function vPaidMedia() {
   const prereqRows = pm.prereqs.map((x, i) => `
     <li><span class="when">STEP 0.${i + 1}</span>${esc(x.what)}, <span style="color:var(--muted-foreground)">${esc(x.state)}</span></li>`).join("");
 
-  return `
-  ${topbar("Paid Media", `<span class="pulse-mark">● PULSE · METRICS</span> by Arqentia · they asked for a media buyer; this is the buyer with instruments`, `<span class="chip amber">PHASE 2 · SAMPLE SCENARIO</span>`)}
+  /* ---- Analytics port (dashboard/analytics del template) adaptado a ads ---- */
+  const tiles = [
+    [tr("Ad Spend", "Inversión en ads"), "$3,000", "up", "2.1%", tr("from $2,940 · last 4 weeks", "de $2,940 · últimas 4 semanas")],
+    [tr("Leads", "Leads"), "120", "up", "2.8%", tr("from 96 · last 4 weeks", "de 96 · últimas 4 semanas")],
+    [tr("Tours + trials", "Tours + trials"), "54", "up", "4.2%", tr("from 43 · last 4 weeks", "de 43 · últimas 4 semanas")],
+    [tr("New members", "Miembros nuevos"), "19", "up", "5.2%", tr("from 15 · last 4 weeks", "de 15 · últimas 4 semanas")],
+    [tr("Cost per member", "Costo por miembro"), "$158", "up", "5.6% ↓", tr("from $167 · lower is better", "de $167 · menos es mejor")],
+  ].map(t => `
+    <div class="astile">
+      <div class="ash">${t[0]}<span style="margin-left:auto;color:var(--muted-foreground)">…</span></div>
+      <div class="kpirow"><span class="kpiv">${t[1]}</span><span class="kbadge ${t[2]}">${CRM_I.tUp}${t[3]}</span></div>
+      <div class="assub">${t[4]}</div>
+    </div>`).join("");
 
-  <div class="metrics">
-    <div class="metric"><div class="k">Sample monthly budget</div><div class="v">$3,000</div>
-      <div class="s">SAMPLE · scenario, not a quote. Real budget is a Discovery decision</div></div>
-    <div class="metric"><div class="k">Cost per lead</div><div class="v">${pm.unitMath.cpl}</div>
-      <div class="s">SAMPLE · 120 leads into the CRM pipeline</div></div>
-    <div class="metric"><div class="k">Real cost per member</div><div class="v" style="color:#23E3A4">${pm.unitMath.costPerMember}</div>
-      <div class="s">SAMPLE · spend ÷ Glofox joins, the number platforms never give</div></div>
-    <div class="metric"><div class="k">Payback anchor</div><div class="v">$179.99<span class="unit">/ mo plan</span></div>
-      <div class="s">REAL price · month one nearly covers acquisition in this scenario</div></div>
+  /* Lead Quality: dos líneas suaves (sólida = leads reales, punteada = clicks basura) */
+  const n = 28, W = 1000, H = 220;
+  const q1 = [], q2 = [];
+  for (let i = 0; i < n; i++) {
+    q1.push(4.2 + Math.sin(i / 2.4) * 1.4 + ((i * 17) % 7) * 0.28);
+    q2.push(2.2 + Math.sin(i / 3.2 + 2) * 1.1 + ((i * 11) % 5) * 0.22);
+  }
+  const qmax = Math.max.apply(null, q1.concat(q2)) * 1.15;
+  const qp = a => _smoothPath(a.map((v, i) => [i / (n - 1) * W, H - v / qmax * H]));
+  const rtBars = Array.from({ length: 28 }, (_, i) => {
+    const h = 22 + ((i * 29) % 61);
+    return `<span class="rtb" style="height:${h}%"></span>`;
+  }).join("");
+  const chanRows = [
+    ["Meta · Guided Tour", 52, "M"], ["Google · brand + gym near me", 34, "G"],
+    ["Meta · Trial offer", 22, "M"], ["Google · generic fitness", 12, "G"],
+  ].map(c => `<div class="rtrow"><span class="rtc mono">${c[2]}</span><span class="rtn">${esc(c[0])}</span><b class="mono">${c[1]}</b></div>`).join("");
+
+  const campRows = [
+    ["Meta · Guided Tour campaign", 52, 9, "$1,190", "$132"],
+    ["Google · brand + \"gym near me\"", 34, 6, "$980", "$163"],
+    ["Meta · Trial offer", 22, 3, "$610", "$203"],
+    ["Google · generic fitness", 12, 1, "$220", "$220"],
+  ].map(r => `
+    <tr><td class="t">${esc(r[0])}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td></tr>`).join("");
+
+  return `
+  ${topbar("Ads Report", `<span class="pulse-mark">● PULSE · METRICS</span> by Arqentia · they asked for a media buyer; this is the buyer with instruments`, `<span class="chip amber">PHASE 2 · SAMPLE SCENARIO</span>`)}
+
+  <div class="repnote">
+    <span class="chip green">${tr("OPERATING VIEW · WHILE CAMPAIGNS RUN", "VISTA OPERATIVA · MIENTRAS CORREN LAS CAMPAÑAS")}</span>
+    <p><b>${tr("What you are looking at:", "Qué estás viendo:")}</b> ${tr("the day-to-day cockpit of paid campaigns: spend, leads, tours and real cost per member as they happen (SAMPLE scenario). The polished document the client receives every month is the", "la cabina diaria de las campañas pagadas: inversión, leads, tours y costo real por miembro mientras suceden (escenario SAMPLE). El documento pulido que el cliente recibe cada mes es el")} <a href="#pulsereport">${tr("Monthly Report", "Reporte Mensual")} →</a></p>
+  </div>
+
+  <div class="kbbar" style="border-bottom:0;padding-bottom:0">
+    <div class="tabs">
+      <button class="tab on">${tr("Overview", "Resumen")}</button>
+      ${["Meta", "Google", tr("Creatives", "Creativos"), tr("Attribution", "Atribución")].map(l => `<button class="tab" onclick="toast('${l}', tr('SAMPLE: opens with live ad accounts after Discovery', 'SAMPLE: se abre con cuentas de ads reales tras Discovery'))">${l}</button>`).join("")}
+    </div>
+    <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The sample scenario covers 4 weeks','El escenario sample cubre 4 semanas')); this.selectedIndex=0">
+      <option selected>${tr("Last 4 weeks", "Últimas 4 semanas")}</option><option>${tr("Last week", "Última semana")}</option>
+    </select>
+  </div>
+
+  <div class="astiles">${tiles}</div>
+
+  <div class="acgrid" style="grid-template-columns:1.7fr 1fr;margin-bottom:14px">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Lead Quality", "Calidad de leads")}</div>
+        <div class="ccdesc">${tr("Real leads vs junk clicks per day · the anomaly cross that cuts waste", "Leads reales vs clicks basura por día · el cruce de anomalías que corta el desperdicio")}</div></div>
+        <span class="actleg" style="gap:14px"><span class="actleg"><i></i>${tr("Real leads", "Leads reales")}</span><span class="actleg dim"><i style="border-radius:0;height:2px"></i>${tr("Junk clicks", "Clicks basura")}</span></span></div>
+      <svg class="actsvg" style="height:230px" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${qp(q1)}" fill="none" stroke="currentColor" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+        <path d="${qp(q2)}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="cflowx" style="margin-top:8px"><span>${tr("Week 1", "Semana 1")}</span><span>${tr("Week 2", "Semana 2")}</span><span>${tr("Week 3", "Semana 3")}</span><span>${tr("Week 4", "Semana 4")}</span></div>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Lead Flow", "Flujo de leads")}</div><span class="actleg"><i style="background:var(--live);border-radius:999px"></i>SAMPLE</span></div>
+      <div class="crailbig" style="font-size:28px">120 <span>${tr("this month", "este mes")}</span></div>
+      <div class="rtstrip">${rtBars}</div>
+      <div class="rtrows">${chanRows}</div>
+    </div>
+  </div>
+
+  <div class="acgrid" style="grid-template-columns:1.7fr 1fr;margin-bottom:14px">
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Campaign Performance", "Rendimiento por campaña")}</div><span class="chip gray">SAMPLE</span></div>
+      <div class="tablewrap"><table class="crmtable">
+        <thead><tr><th>${tr("Campaign", "Campaña")}</th><th style="text-align:right">Leads</th><th style="text-align:right">${tr("Members", "Miembros")}</th><th style="text-align:right">${tr("Spend", "Inversión")}</th><th style="text-align:right">${tr("Cost / member", "Costo / miembro")}</th></tr></thead>
+        <tbody>${campRows}</tbody>
+      </table></div>
+    </div>
+    <div class="crmcard" style="margin-bottom:0">
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Attribution", "Atribución")}</div>
+        <div class="ccdesc">${tr("Platform claims vs Glofox reality", "Lo que claman las plataformas vs la realidad Glofox")}</div></div></div>
+      <div class="dist">${attRows}</div>
+      <div class="evnote" style="margin-top:12px">${esc(pm.attribution.note)}</div>
+    </div>
   </div>
 
   <div class="grid"><div class="panel wide">
@@ -3115,16 +3201,11 @@ function vPaidMedia() {
       <div class="ptitle">Spend to members, one funnel <span class="hint">SAMPLE scenario · leads land in the CRM Pipeline with their campaign attached</span></div>
       <div class="dist">${funnelRows}</div>
       <div class="evnote" style="margin-top:14px">${esc(pm.unitMath.anchor)} Two of the leads on the <a href="#pipeline" style="color:var(--foreground)">Pipeline board</a> carry their ad campaign as source: that handoff is the integration.</div>
-      <hr class="separator">
+    </div>
+    <div class="panel">
       <div class="ptitle" style="font-size:13px">Step 0: the plumbing <span class="hint">real, from their own hiring post</span></div>
       <ul class="tl">${prereqRows}</ul>
       <div class="evnote">You cannot buy Meta media with Facebook and Instagram disconnected and phantom pages splitting the brand. The <a href="#meta" style="color:var(--foreground)">Meta Health cleanup</a> is the first week of this engagement.</div>
-    </div>
-
-    <div class="panel">
-      <div class="ptitle">Who really brought the member <span class="hint">SAMPLE scenario · the Pulse attribution cross</span></div>
-      <div class="dist">${attRows}</div>
-      <div class="evnote" style="margin-top:14px">${esc(pm.attribution.note)}</div>
       <hr class="separator">
       <div class="evnote" style="margin-top:0"><b style="color:var(--foreground)">The moat, in one line:</b> ${esc(pm.moat)}</div>
     </div>
