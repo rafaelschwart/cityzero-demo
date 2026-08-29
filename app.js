@@ -1487,10 +1487,137 @@ const CRM_I = {
   chR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`,
 };
 
-function pipeTabs() {
-  const t = [["overview", tr("Overview", "Resumen")], ["board", tr("Board", "Tablero")], ["list", tr("List", "Lista")]];
-  return `<div class="tabs" style="margin-bottom:16px">${t.map(([k, l]) =>
-    `<button class="tab${PIPE_VIEW === k ? " on" : ""}" onclick="setPipeView('${k}')">${l}</button>`).join("")}</div>`;
+const KB_I = {
+  grip: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`,
+  moreV: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>`,
+  flame: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  minus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>`,
+  clip: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
+  msg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`,
+  check2: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>`,
+  sliders: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>`,
+  updown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>`,
+  chevD: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+  kanb: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v11"/><path d="M12 5v6"/><path d="M18 5v14"/></svg>`,
+  listI: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg>`,
+  grid: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`,
+  cal3: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`,
+};
+
+let KB_Q = "", KB_PRI = "all", KB_SORT = "days";
+
+function priKey(c) { if (c.breach || c.days <= 1) return "high"; if (c.days <= 4) return "medium"; return "low"; }
+
+function kbSearch(v) {
+  const q = v.toLowerCase();
+  document.querySelectorAll(".kbtask").forEach(el => {
+    el.style.opacity = !q || (el.getAttribute("data-q") || "").indexOf(q) >= 0 ? "" : ".25";
+  });
+}
+function kbCyclePri() {
+  const order = ["all", "high", "medium", "low"];
+  KB_PRI = order[(order.indexOf(KB_PRI) + 1) % order.length];
+  render();
+}
+function kbToggleSort() { KB_SORT = KB_SORT === "days" ? "priority" : "days"; render(); }
+
+function kbTeam(c) {
+  const s = c.source.toLowerCase();
+  if (c.paid) return ["Paid", "#a78bfa"];
+  if (s.indexOf("landing") >= 0 || s.indexOf("form") >= 0 || s.indexOf("website") >= 0) return ["Forms", "#60a5fa"];
+  if (s.indexOf("instagram") >= 0 || s.indexOf("dm") >= 0) return ["Social", "#f472b6"];
+  if (s.indexOf("classpass") >= 0 || s.indexOf("wellhub") >= 0) return ["Partner", "#2dd4bf"];
+  return ["Front desk", "#fbbf24"];
+}
+
+function kbTaskCard(c, stKey) {
+  const h = _mhash(c.name);
+  const pk = priKey(c);
+  const badge = { high: [KB_I.flame, "high", "High"], medium: [`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>`, "med", "Medium"], low: [KB_I.minus, "low", "Low"] }[pk];
+  const loc = (typeof LANG !== "undefined" && LANG === "es") ? "es" : "en-US";
+  const since = new Intl.DateTimeFormat(loc, { month: "short", day: "numeric" }).format(new Date(Date.now() - c.days * 864e5));
+  const ini = esc(c.name.split(" ").map(w => w[0]).join("").slice(0, 2));
+  const nm = c.name.replace(/'/g, "\\'");
+  const details = stKey === "tour" || stKey === "trial";
+  const done = stKey === "member";
+  const prog = Math.min(96, 18 + (h % 60) + (["new", "contacted", "tour", "trial", "member"].indexOf(c.stage) + 1) * 12);
+  const team = kbTeam(c);
+  const ownerRow = `
+    <div class="kbmeta">
+      <span class="kbown"><span class="kbava">${ini}</span>${esc(c.owner)}</span>
+      <span class="kbdue">${since}${KB_I.cal3}</span>
+    </div>`;
+  const detailRows = `
+    <div class="kbdet">
+      <div class="kbpl"><span>${tr("Progress", "Progreso")}</span><span class="mono">${prog}%</span></div>
+      <div class="progress" style="height:8px"><div class="bar" style="width:${prog}%"></div></div>
+      <div class="kbrow"><span>${tr("Owner", "Dueño")}</span><span class="kbrv">${esc(c.owner)}<span class="kbava">${ini}</span></span></div>
+      <div class="kbrow"><span>${tr("In stage since", "En etapa desde")}</span><span class="kbrv">${since}${KB_I.cal3}</span></div>
+      <div class="kbrow"><span>${tr("Channel", "Canal")}</span><span class="ktag" style="background:color-mix(in oklab, ${team[1]} 16%, transparent);color:color-mix(in oklab, ${team[1]} 72%, var(--foreground))">${team[0]}</span></div>
+    </div>`;
+  const foot = done
+    ? `<div class="kbdone">${KB_I.check2}${tr("Member", "Miembro")}</div>`
+    : `<div class="kbfoot">
+        <span>${KB_I.clip}${h % 4}</span>
+        <span>${KB_I.msg}${1 + h % 9}</span>
+        <span>${KB_I.file}${h % 3}</span>
+      </div>`;
+  return `
+  <article class="kbtask click${c.breach ? " breach" : ""}" data-q="${esc((c.name + " " + c.source + " " + c.next).toLowerCase())}" onclick="openLead('${nm}')">
+    <div class="kbth"><h3>${esc(c.name)}</h3><span class="kbadge ${badge[1]}">${badge[0]}${badge[2]}</span></div>
+    <p class="kbdesc">${esc(c.next)}</p>
+    ${details ? detailRows : ownerRow}
+    <hr class="ksep2">
+    ${foot}
+  </article>`;
+}
+
+function kbColumn(st, p) {
+  let cards = p.cards.filter(c => c.stage === st.key);
+  if (KB_PRI !== "all") cards = cards.filter(c => priKey(c) === KB_PRI);
+  const rank = { high: 0, medium: 1, low: 2 };
+  cards = cards.slice().sort((a, b) => KB_SORT === "priority" ? rank[priKey(a)] - rank[priKey(b)] : a.days - b.days);
+  return `
+  <section class="kbcol">
+    <div class="kbhead">
+      <div class="kbhl">
+        <div class="kbtitle">${KB_I.grip}<h2 data-tip="SLA: ${esc(st.sla)}">${esc(st.label)}</h2></div>
+        <p>${cards.length} ${cards.length === 1 ? "lead" : "leads"}</p>
+      </div>
+      <div class="kbha">
+        <button class="kbicon" data-tip="${tr("Leads enter from live channels", "Los leads entran de canales en vivo")}" onclick="window.open('landing.html','_blank')">${KB_I.plus}</button>
+        <button class="kbicon" data-tip="SLA: ${esc(st.sla)}">${KB_I.moreV}</button>
+      </div>
+    </div>
+    <div class="kbcards">${cards.map(c => kbTaskCard(c, st.key)).join("")}</div>
+  </section>`;
+}
+
+function kbToolbar() {
+  const priLbl = KB_PRI === "all" ? tr("Filter", "Filtrar") : { high: "High", medium: "Medium", low: "Low" }[KB_PRI];
+  const sortLbl = KB_SORT === "days" ? tr("Sort", "Orden") : tr("Priority", "Prioridad");
+  return `
+  <div class="kbbar">
+    ${pipeTabs(true)}
+    <div class="kbact">
+      <span class="kbsearch">${KB_I.search}<input type="search" placeholder="${tr("Search leads", "Buscar leads")}" oninput="kbSearch(this.value)"></span>
+      <button class="btn outline sm" onclick="kbCyclePri()">${KB_I.sliders}${priLbl}</button>
+      <button class="btn outline sm" onclick="kbToggleSort()">${KB_I.updown}${sortLbl}</button>
+      <span class="btngrp">
+        <button class="btn solid sm" data-tip="${tr("Leads enter from the live landing form", "Los leads entran del form del landing en vivo")}" onclick="window.open('landing.html','_blank')">${KB_I.plus}${tr("Add lead", "Añadir lead")}</button>
+        <button class="btn solid sm sq" onclick="toast(tr('Lead intake', 'Entrada de leads'), tr('CSV import and automations land with Phase 2', 'Import CSV y automatizaciones llegan con Fase 2'))">${KB_I.chevD}</button>
+      </span>
+    </div>
+  </div>`;
+}
+
+function pipeTabs(inline) {
+  const t = [["overview", tr("Overview", "Resumen"), KB_I.grid], ["board", tr("Board", "Tablero"), KB_I.kanb], ["list", tr("List", "Lista"), KB_I.listI]];
+  return `<div class="tabs"${inline ? "" : ' style="margin-bottom:16px"'}>${t.map(([k, l, ic]) =>
+    `<button class="tab${PIPE_VIEW === k ? " on" : ""}" onclick="setPipeView('${k}')">${ic}${l}</button>`).join("")}</div>`;
 }
 
 function kpiCard(desc, big, dir, delta, last) {
@@ -1692,47 +1819,11 @@ function vPipeline() {
     }
   });
   const breaches = p.cards.filter(c => c.breach).length;
-  const cols = p.stages.map(st => {
-    const cards = p.cards.filter(c => c.stage === st.key).map(c => {
-      const h = _mhash(c.name);
-      const pri = c.breach ? ["High", "red"] : (c.days <= 1 ? ["High", "red"] : c.days <= 4 ? ["Medium", "amber"] : ["Low", "gray"]);
-      const prog = Math.min(96, 18 + (h % 60) + (["new", "contacted", "tour", "trial", "member"].indexOf(c.stage) + 1) * 12);
-      return `
-      <div class="kcard click${c.breach ? " breach" : ""}" onclick="openLead('${c.name.replace(/'/g, "\\'")}')" data-tip="${tr("Open lead: notes, status, sequences", "Abrir lead: notas, estado, secuencias")}">
-        <div class="ktop"><div class="kname"><span class="avatar sm">${esc(c.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>${esc(c.name)}</div><span class="chip ${pri[1]}" style="font-size:9px;padding:1px 7px">${pri[0]}</span></div>
-        <div class="kprog"><div class="kpl"><span>${tr("Progress", "Progreso")}</span><b class="mono">${prog}%</b></div><div class="kptrack"><i style="width:${prog}%"></i></div></div>
-        <div class="ksrc">${esc(c.source)}${c.landing ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">LIVE</span>' : ""}${c.paid ? ' <span class="chip green" style="font-size:9px;padding:1px 6px;vertical-align:1px">PULSE</span>' : ""}</div>
-        <div class="knext${c.breach ? " bad" : ""}">${esc(c.next)}</div>
-        <div class="krow"><span>${tr("Owner", "Dueño")}</span><b>${esc(c.owner)}</b></div>
-        <div class="krow"><span>${tr("In stage", "En etapa")}</span><b class="mono">${c.days}d</b></div>
-        <div class="kfoot">
-          <span class="kct">${I.checkmsg ? I.checkmsg.replace("<svg", "<svg class='kico'") : ""}<b class="mono">${1 + h % 9}</b></span>
-          <span class="kct">${I.mail ? I.mail.replace("<svg", "<svg class='kico'") : ""}<b class="mono">${h % 4}</b></span>
-          ${c.stage !== "member" ? `<button class="btn ghost xs" style="height:20px;padding:0 6px;margin-left:auto" data-tip="Advance to next stage" onclick="event.stopPropagation();advanceLead('${c.name.replace(/'/g, "\\'")}')">${I.chevR.replace("<svg", "<svg style='width:12px;height:12px'")}</button>` : ""}
-        </div>
-      </div>`;
-    }).join("");
-    const n = p.cards.filter(c => c.stage === st.key).length;
-    return `<div class="kcol">
-      <div class="khead"><span>${esc(st.label)}</span><span class="mono">${n}</span></div>
-      <div class="ksla">${esc(st.sla)}</div>
-      ${cards}
-    </div>`;
-  }).join("");
+  const cols = p.stages.map(st => kbColumn(st, p)).join("");
 
   let body;
   if (PIPE_VIEW === "board") {
-    body = `
-    <div class="metrics">
-      <div class="metric"><div class="k">${tr("Leads on board", "Leads en tablero")}</div><div class="v">${p.cards.length}</div><div class="s">${tr("Sample volume", "Volumen sample")}</div></div>
-      <div class="metric"><div class="k">${tr("SLA breaches", "SLA vencidos")}</div><div class="v red">${breaches}</div><div class="s">${tr("Idle past 48h in New", "Más de 48h sin tocar en New")}</div></div>
-      <div class="metric"><div class="k">${tr("Stages", "Etapas")}</div><div class="v">${p.stages.length}</div><div class="s">${tr("New to Member, each with its own SLA", "De New a Member, cada una con su SLA")}</div></div>
-      <div class="metric"><div class="k">${tr("Channels feeding in", "Canales que alimentan")}</div><div class="v">${DATA.leadChannels.length}</div><div class="s">${tr("All real: see Lead Channels", "Todos reales: ver Lead Channels")}</div></div>
-    </div>
-    <div class="grid"><div class="panel wide">
-      <div class="ptitle">${tr("Board", "Tablero")} <span class="hint">${tr("names and volumes are sample; stages, SLAs, channels and roles are the real design", "nombres y volúmenes sample; etapas, SLAs, canales y roles son el diseño real")}</span></div>
-      <div class="kanban">${cols}</div>
-    </div></div>`;
+    body = `${kbToolbar()}<div class="kanban2">${cols}</div>`;
   } else if (PIPE_VIEW === "list") {
     body = crmList(p);
   } else {
@@ -1741,7 +1832,7 @@ function vPipeline() {
 
   return `
   ${topbar("Pipeline", "EVERY LEAD, ONE BOARD, AN OWNER AND A CLOCK ON EACH", p2chip())}
-  ${pipeTabs()}
+  ${PIPE_VIEW === "board" ? "" : pipeTabs()}
   ${body}
   ${demoNote()}`;
 }

@@ -45,8 +45,8 @@
   --warnO: #ea580c;
   --mint: #0f9d7a;
 
-  --font: "Heebo", ui-sans-serif, system-ui, sans-serif;
-  --mono: "Roboto Mono", ui-monospace, monospace;
+  --font: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
   --sidebar-w: 244px;
   --shadow-xs: 0 1px 2px 0 rgba(16,24,40,.06);
   --shadow-sm: 0 1px 3px 0 rgba(16,24,40,.08), 0 1px 2px -1px rgba(16,24,40,.06);
@@ -1488,3 +1488,64 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .pgb svg { width: 13px; height: 13px; }
 @media (max-width: 1100px) { .kpigrid { grid-template-columns: repeat(2, 1fr); } .ccbody { grid-template-columns: 1fr; } .crmrow2 { grid-template-columns: 1fr; } .cflow { height: 190px; } .cflowx span:nth-child(odd) { visibility: hidden; } }
 @media (max-width: 640px) { .kpigrid { grid-template-columns: 1fr; } }
+
+/* ================= Kanban board (template port: kanban/_components) ================= */
+.kbbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding: 2px 0 12px; margin-bottom: 16px; }
+.kbact { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kbsearch { position: relative; display: inline-flex; align-items: center; }
+.kbsearch svg { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--muted-foreground); pointer-events: none; }
+.kbsearch input { height: 32px; width: 216px; padding: 0 12px 0 32px; font: inherit; font-size: 13px; color: var(--foreground); background: color-mix(in oklab, var(--input) 30%, transparent); border: 1px solid var(--input); border-radius: var(--radius-md); outline: 0; box-shadow: var(--shadow-xs); }
+.kbsearch input:focus { border-color: var(--ring); }
+.btn.solid { background: var(--primary); color: var(--primary-foreground); border: 1px solid var(--primary); }
+.btn.solid:hover { background: color-mix(in oklab, var(--primary) 88%, var(--background)); }
+.btn.sq { width: 32px; padding: 0; justify-content: center; }
+.btngrp { display: inline-flex; align-items: stretch; }
+.btngrp .btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.btngrp .btn.sq { border-radius: 0 var(--radius-md) var(--radius-md) 0; border-left: 1px solid color-mix(in oklab, var(--primary-foreground) 25%, var(--primary)); }
+.btn.outline svg, .btn.solid svg { width: 14px; height: 14px; }
+.tab svg { width: 14px; height: 14px; }
+
+.kanban2 { display: grid; grid-auto-flow: column; grid-auto-columns: 296px; gap: 14px; overflow-x: auto; align-items: start; padding-bottom: 10px; }
+.kbcol { display: flex; flex-direction: column; min-height: 120px; border: 1px solid var(--border); border-radius: 12px 12px 0 0; background: color-mix(in oklab, var(--muted) 50%, transparent); }
+.kbhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 14px 10px; }
+.kbhl { min-width: 0; }
+.kbtitle { display: flex; align-items: center; gap: 3px; }
+.kbtitle svg { width: 15px; height: 15px; color: color-mix(in oklab, var(--foreground) 70%, transparent); margin-left: -4px; cursor: grab; }
+.kbtitle h2 { font-size: 15px; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kbhl p { font-size: 13px; color: var(--muted-foreground); margin-top: 5px; line-height: 1; font-variant-numeric: tabular-nums; }
+.kbha { display: flex; align-items: center; gap: 2px; margin-right: -6px; }
+.kbicon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--muted-foreground); cursor: pointer; }
+.kbicon:hover { background: var(--accent); color: var(--foreground); }
+.kbicon svg { width: 15px; height: 15px; }
+.kbcards { display: flex; flex-direction: column; gap: 12px; padding: 0 12px 12px; max-height: calc(100dvh - 330px); min-height: 40px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+.kbtask { display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 16px; box-shadow: var(--shadow-xs); cursor: pointer; transition: border-color .15s ease; }
+.kbtask:hover { border-color: color-mix(in oklab, var(--foreground) 22%, var(--border)); }
+.kbtask.breach { border-color: color-mix(in oklab, var(--red) 45%, var(--border)); }
+.kbth { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kbth h3 { min-width: 0; font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kbadge { flex: none; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-md); padding: 3px 8px; font-size: 11.5px; font-weight: 500; line-height: 1; }
+.kbadge svg { width: 12px; height: 12px; }
+.kbadge.high { background: color-mix(in oklab, var(--red) 16%, transparent); color: var(--red); }
+.kbadge.med { background: color-mix(in oklab, var(--amber) 15%, transparent); color: var(--amber); }
+.kbadge.low { background: color-mix(in oklab, var(--muted-foreground) 15%, transparent); color: var(--muted-foreground); }
+.kbdesc { font-size: 13px; color: var(--muted-foreground); line-height: 1.45; margin: -3px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kbmeta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kbown { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-foreground); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kbava { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex: none; border-radius: 4px; background: var(--secondary); border: 1px solid var(--border); font-size: 9px; font-weight: 600; letter-spacing: .02em; color: var(--foreground); }
+.kbdue { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-foreground); white-space: nowrap; }
+.kbdue svg { width: 12px; height: 12px; }
+.kbdet { display: flex; flex-direction: column; gap: 10px; }
+.kbpl { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--muted-foreground); }
+.kbrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted-foreground); }
+.kbrv { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.kbrv svg { width: 12px; height: 12px; }
+.ktag { display: inline-flex; border-radius: var(--radius-md); padding: 3px 8px; font-size: 11.5px; font-weight: 500; line-height: 1; }
+.ksep2 { border: 0; border-top: 1px solid var(--border); margin: 0; }
+.kbfoot { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted-foreground); }
+.kbfoot span { display: inline-flex; align-items: center; gap: 5px; }
+.kbfoot svg { width: 13px; height: 13px; }
+.kbdone { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--green); }
+.kbdone svg { width: 15px; height: 15px; }
+@media (max-width: 900px) { .kanban2 { grid-auto-columns: 272px; } .kbsearch input { width: 150px; } }
+.kanban2 { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
