@@ -1620,3 +1620,5 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .actip span i.dim { background: color-mix(in oklab, var(--foreground) 55%, var(--background)); }
 .actip span i.dim2 { background: color-mix(in oklab, var(--foreground) 30%, var(--background)); }
 .actip span em { margin-left: auto; font-style: normal; font-family: var(--mono); font-size: 12px; color: var(--foreground); font-variant-numeric: tabular-nums; padding-left: 18px; }
+/* tooltip indicator='line' del template */
+.actip span i { width: 3px; height: 13px; border-radius: 2px; }

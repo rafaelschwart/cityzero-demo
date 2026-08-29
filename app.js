@@ -281,33 +281,45 @@ function favatar(name, size) {
 
 /* ---------- Overview (template port: dashboard/default) ---------- */
 
-function ovChart() {
-  const days = 90;
-  const pts = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 864e5);
-    const dow = d.getDay();
-    let v = dow === 0 ? 52 : dow === 6 ? 148 : 92 + ((dow * 17) % 26);
-    v += ((i * 37) % 23) + ((i * 13) % 11) - 16;
-    if (i % 9 === 0) v += 58;
-    if (i % 31 === 0) v += 30;
-    pts.push({ d, v: Math.max(30, v) });
+/* Catmull-Rom → Bézier: el equivalente vanilla del type="natural" de Recharts
+   (performance-overview.tsx del template). */
+function _smoothPath(pts) {
+  let d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    d += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)},${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)},${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
   }
-  pts.forEach((p, i) => { p.b = Math.round(p.v * 0.32); p.n = ((i * 13) % 7) >= 5 ? 2 : ((i * 13) % 7) >= 3 ? 1 : 0; });
-  const max = Math.max.apply(null, pts.map(p => p.v)) * 1.08;
+  return d;
+}
+
+function ovChart() {
+  /* Port de performance-overview.tsx: 3 series independientes en pasos de 12h
+     (la forma del dataset del template: principal con picos, dos líneas estables
+     con oscilación propia), escala única desde 0, curvas naturales. */
+  const n = 180;
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const d = new Date(Date.now() - (n - 1 - i) * 432e5);
+    let main = 96 + ((i * 37) % 23) + Math.sin(i / 3.1) * 9 + Math.sin(i / 7.7) * 6;
+    if (i % 13 === 0) main += 88 + (i * 7) % 72;
+    else if (i % 9 === 0) main += 44;
+    const book = 62 + Math.sin(i / 5.3) * 5 + ((i * 11) % 7) - 3;
+    const ret = 45 + Math.sin(i / 6.7) * 4 + ((i * 5) % 5) - 2;
+    pts.push({ d, v: Math.round(Math.max(28, main)), b: Math.round(book), n: Math.round(ret) });
+  }
+  const max = Math.max.apply(null, pts.map(p => p.v)) * 1.05;
   const W = 1000, H = 240;
-  const xy = pts.map((p, i) => [i / (days - 1) * W, H - p.v / max * H]);
-  const yb = xy.map(c => H - (H - c[1]) * 0.32);
-  const yn = xy.map((c, i) => H - 12 - ((i * 13) % 7));
-  const line = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join("");
+  const X = i => i / (n - 1) * W, Y = v => H - v / max * H;
+  const y0 = pts.map(p => Y(p.v)), y1 = pts.map(p => Y(p.b)), y2 = pts.map(p => Y(p.n));
+  const line = _smoothPath(pts.map((p, i) => [X(i), y0[i]]));
   const area = line + `L${W},${H}L0,${H}Z`;
-  const bline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + yb[i].toFixed(1)).join("");
-  const nline = xy.map((c, i) => (i ? "L" : "M") + c[0].toFixed(1) + "," + yn[i].toFixed(1)).join("");
-  window._OVC = { pts, days, H, y0: xy.map(c => c[1]), y1: yb, y2: yn };
+  const bline = _smoothPath(pts.map((p, i) => [X(i), y1[i]]));
+  const nline = _smoothPath(pts.map((p, i) => [X(i), y2[i]]));
+  window._OVC = { pts, days: n, H, y0, y1, y2 };
   const lf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
   const labels = [];
-  for (let i = 0; i < days; i += 11) labels.push(lf.format(pts[i].d));
-  return { area, line, bline, labels };
+  for (let i = 0; i < n; i += 22) labels.push(lf.format(pts[i].d));
+  return { area, line, bline, nline, labels };
 }
 
 /* Hover layer del Gym Activity: crosshair + dots por serie + tooltip con
@@ -324,8 +336,6 @@ function ovHover(e) {
   const i = Math.max(0, Math.min(C.days - 1, Math.round(x / r.width * (C.days - 1))));
   const px = (r.left - wr.left) + i / (C.days - 1) * r.width;
   const topSvg = r.top - wr.top;
-  const line = hov.querySelector(".acx");
-  line.style.left = px + "px"; line.style.top = topSvg + "px"; line.style.height = r.height + "px";
   const ys = [C.y0[i], C.y1[i], C.y2[i]];
   hov.querySelectorAll(".acdot").forEach((d, k) => {
     d.style.left = px + "px";
@@ -339,7 +349,7 @@ function ovHover(e) {
     tip.innerHTML = `<b>${lf.format(p.d)}</b>
       <span><i></i>${tr("Check-ins", "Check-ins")}<em>${p.v}</em></span>
       <span><i class="dim"></i>${tr("Class bookings", "Reservas de clase")}<em>${p.b}</em></span>
-      <span><i class="dim2"></i>${tr("New members", "Altas")}<em>${p.n}</em></span>`;
+      <span><i class="dim2"></i>${tr("Returning members", "Miembros recurrentes")}<em>${p.n}</em></span>`;
   }
   const tw = tip.offsetWidth || 190;
   const flip = px + tw + 28 > wr.width;
@@ -483,22 +493,22 @@ function vToday() {
     </div>
     <div class="actwrap" onmousemove="ovHover(event)" onmouseleave="ovLeave()">
       <div class="achover" id="achover" aria-hidden="true">
-        <i class="acx"></i><i class="acdot"></i><i class="acdot dim"></i><i class="acdot dim2"></i>
+        <i class="acdot"></i><i class="acdot dim"></i><i class="acdot dim2"></i>
         <div class="actip" id="actip"></div>
       </div>
       <div class="actlegs">
         <span class="actleg"><i></i>${tr("Check-ins", "Check-ins")}</span>
         <span class="actleg dim"><i></i>${tr("Class bookings", "Reservas de clase")}</span>
-        <span class="actleg dim"><i></i>${tr("New members", "Altas")}</span>
+        <span class="actleg dim"><i></i>${tr("Returning members", "Miembros recurrentes")}</span>
       </div>
       <svg class="actsvg" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="ovg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="currentColor" stop-opacity=".2"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+          <stop offset="5%" stop-color="currentColor" stop-opacity=".36"/><stop offset="95%" stop-color="currentColor" stop-opacity=".04"/>
         </linearGradient></defs>
         <path d="${c.area}" fill="url(#ovg)"/>
-        <path d="${c.bline}" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1" vector-effect="non-scaling-stroke"/>
-        <path d="${c.nline}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="1" vector-effect="non-scaling-stroke"/>
-        <path d="${c.line}" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+        <path d="${c.bline}" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+        <path d="${c.nline}" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+        <path d="${c.line}" fill="none" stroke="currentColor" stroke-width="1.25" vector-effect="non-scaling-stroke"/>
       </svg>
       <div class="actx">${c.labels.map(l => `<span>${l}</span>`).join("")}</div>
     </div>
