@@ -3099,18 +3099,20 @@ function vPaidMedia() {
   const prereqRows = pm.prereqs.map((x, i) => `
     <li><span class="when">STEP 0.${i + 1}</span>${esc(x.what)}, <span style="color:var(--muted-foreground)">${esc(x.state)}</span></li>`).join("");
 
-  /* ---- Analytics port (dashboard/analytics del template) adaptado a ads ---- */
+  /* ---- Analytics port (dashboard/analytics del template) adaptado a ads ----
+     Escala SEMANA + ritmo: la cabina opera; los totales cerrados viven en el
+     Monthly Report. Nada de repetir el resumen mensual aquí. */
   const tiles = [
-    [tr("Ad Spend", "Inversión en ads"), "$3,000", "up", "2.1%", tr("from $2,940 · last 4 weeks", "de $2,940 · últimas 4 semanas")],
-    [tr("Leads", "Leads"), "120", "up", "2.8%", tr("from 96 · last 4 weeks", "de 96 · últimas 4 semanas")],
-    [tr("Tours + trials", "Tours + trials"), "54", "up", "4.2%", tr("from 43 · last 4 weeks", "de 43 · últimas 4 semanas")],
-    [tr("New members", "Miembros nuevos"), "19", "up", "5.2%", tr("from 15 · last 4 weeks", "de 15 · últimas 4 semanas")],
-    [tr("Cost per member", "Costo por miembro"), "$158", "up", "5.6% ↓", tr("from $167 · lower is better", "de $167 · menos es mejor")],
+    [tr("Spend this week", "Inversión esta semana"), "$742", `<span class="kbadge up">${CRM_I.tUp}${tr("on pace", "a ritmo")}</span>`, tr("$2,140 of $3,000 this month · 71% spent, 74% elapsed", "$2,140 de $3,000 del mes · 71% gastado, 74% transcurrido")],
+    [tr("Leads this week", "Leads esta semana"), "31", `<span class="kbadge up">${CRM_I.tUp}+8</span>`, tr("vs 23 last week", "vs 23 la semana pasada")],
+    [tr("Junk clicks cut", "Clicks basura cortados"), "9%", `<span class="kbadge up">${CRM_I.tUp}+2 pts</span>`, tr("of billed clicks removed this week", "de los clicks facturados, removidos esta semana")],
+    [tr("Tours booked this week", "Tours agendados esta semana"), "13", `<span class="kbadge up">${CRM_I.tUp}+4</span>`, tr("from ad leads, confirmed in Glofox", "de leads de ads, confirmados en Glofox")],
+    [tr("Projected cost / member", "Costo proyectado / miembro"), "$161", `<span class="chip gray" style="font-size:9px">MTD</span>`, tr("in progress · the closed number ships in the Monthly Report", "en curso · el número cerrado sale en el Reporte Mensual")],
   ].map(t => `
     <div class="astile">
       <div class="ash">${t[0]}<span style="margin-left:auto;color:var(--muted-foreground)">…</span></div>
-      <div class="kpirow"><span class="kpiv">${t[1]}</span><span class="kbadge ${t[2]}">${CRM_I.tUp}${t[3]}</span></div>
-      <div class="assub">${t[4]}</div>
+      <div class="kpirow"><span class="kpiv">${t[1]}</span>${t[2]}</div>
+      <div class="assub">${t[3]}</div>
     </div>`).join("");
 
   /* Lead Quality: dos líneas suaves (sólida = leads reales, punteada = clicks basura) */
@@ -3127,17 +3129,22 @@ function vPaidMedia() {
     return `<span class="rtb" style="height:${h}%"></span>`;
   }).join("");
   const chanRows = [
-    ["Meta · Guided Tour", 52, "M"], ["Google · brand + gym near me", 34, "G"],
-    ["Meta · Trial offer", 22, "M"], ["Google · generic fitness", 12, "G"],
+    ["Meta · Guided Tour", 14, "M"], ["Google · brand + gym near me", 9, "G"],
+    ["Meta · Trial offer", 5, "M"], ["Google · generic fitness", 3, "G"],
   ].map(c => `<div class="rtrow"><span class="rtc mono">${c[2]}</span><span class="rtn">${esc(c[0])}</span><b class="mono">${c[1]}</b></div>`).join("");
 
+  const campSt = {
+    Delivering: `<span class="chip green">${tr("Delivering", "Activa")}</span>`,
+    Learning: `<span class="chip amber">${tr("Learning", "Aprendiendo")}</span>`,
+    Paused: `<span class="chip gray">${tr("Paused", "Pausada")}</span>`,
+  };
   const campRows = [
-    ["Meta · Guided Tour campaign", 52, 9, "$1,190", "$132"],
-    ["Google · brand + \"gym near me\"", 34, 6, "$980", "$163"],
-    ["Meta · Trial offer", 22, 3, "$610", "$203"],
-    ["Google · generic fitness", 12, 1, "$220", "$220"],
+    ["Meta · Guided Tour campaign", "Delivering", 52, 9, "$1,190", "$132"],
+    ["Google · brand + \"gym near me\"", "Delivering", 34, 6, "$980", "$163"],
+    ["Meta · Trial offer", "Learning", 22, 3, "$610", "$203"],
+    ["Google · generic fitness", "Paused", 12, 1, "$220", "$220"],
   ].map(r => `
-    <tr><td class="t">${esc(r[0])}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td></tr>`).join("");
+    <tr><td class="t">${esc(r[0])}</td><td>${campSt[r[1]]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td><td class="num">${r[5]}</td></tr>`).join("");
 
   return `
   ${topbar("Ads Report", `<span class="pulse-mark">● PULSE · METRICS</span> by Arqentia · they asked for a media buyer; this is the buyer with instruments`, `<span class="chip amber">PHASE 2 · SAMPLE SCENARIO</span>`)}
@@ -3152,12 +3159,17 @@ function vPaidMedia() {
       <button class="tab on">${tr("Overview", "Resumen")}</button>
       ${["Meta", "Google", tr("Creatives", "Creativos"), tr("Attribution", "Atribución")].map(l => `<button class="tab" onclick="toast('${l}', tr('SAMPLE: opens with live ad accounts after Discovery', 'SAMPLE: se abre con cuentas de ads reales tras Discovery'))">${l}</button>`).join("")}
     </div>
-    <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The sample scenario covers 4 weeks','El escenario sample cubre 4 semanas')); this.selectedIndex=0">
-      <option selected>${tr("Last 4 weeks", "Últimas 4 semanas")}</option><option>${tr("Last week", "Última semana")}</option>
+    <select class="select" style="height:32px;width:auto;font-size:12.5px" onchange="toast(tr('Demo range','Rango demo'), tr('The operating view runs on the current week; closed periods live in the Monthly Report','La vista operativa corre sobre la semana actual; los períodos cerrados viven en el Reporte Mensual')); this.selectedIndex=0">
+      <option selected>${tr("This week", "Esta semana")}</option><option>${tr("Today", "Hoy")}</option><option>${tr("Month to date", "Mes en curso")}</option>
     </select>
   </div>
 
   <div class="astiles">${tiles}</div>
+
+  <div class="repnote" style="margin-top:0">
+    <span class="chip gray">${tr("ACTIONS THIS WEEK", "ACCIONES DE LA SEMANA")}</span>
+    <p>${tr("Moved $120 from Google generic to Meta Guided Tour · cut 2 junk placements billing bounce-in-seconds clicks · paused delivery outside staffed hours (inherited from the real-hours monitor). This is what the client never sees in a monthly PDF: the steering.", "Se movieron $120 de Google genérica a Meta Guided Tour · se cortaron 2 placements basura que facturaban clicks de segundos · se pausó la entrega fuera de horario atendido (heredado del monitor de horarios reales). Esto es lo que un PDF mensual nunca muestra: el volante.")}</p>
+  </div>
 
   <div class="acgrid" style="grid-template-columns:1.7fr 1fr;margin-bottom:14px">
     <div class="crmcard" style="margin-bottom:0">
@@ -3172,7 +3184,7 @@ function vPaidMedia() {
     </div>
     <div class="crmcard" style="margin-bottom:0">
       <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Lead Flow", "Flujo de leads")}</div><span class="actleg"><i style="background:var(--live);border-radius:999px"></i>SAMPLE</span></div>
-      <div class="crailbig" style="font-size:28px">120 <span>${tr("this month", "este mes")}</span></div>
+      <div class="crailbig" style="font-size:28px">31 <span>${tr("this week", "esta semana")}</span></div>
       <div class="rtstrip">${rtBars}</div>
       <div class="rtrows">${chanRows}</div>
     </div>
@@ -3180,15 +3192,16 @@ function vPaidMedia() {
 
   <div class="acgrid" style="grid-template-columns:1.7fr 1fr;margin-bottom:14px">
     <div class="crmcard" style="margin-bottom:0">
-      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Campaign Performance", "Rendimiento por campaña")}</div><span class="chip gray">SAMPLE</span></div>
+      <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Campaign Performance", "Rendimiento por campaña")}</div>
+        <div class="ccdesc">${tr("Month to date · steer budgets here, judge them in the Monthly Report", "Mes en curso · aquí se mueve el presupuesto; se juzga en el Reporte Mensual")}</div></div><span class="chip gray">SAMPLE</span></div>
       <div class="tablewrap"><table class="crmtable">
-        <thead><tr><th>${tr("Campaign", "Campaña")}</th><th style="text-align:right">Leads</th><th style="text-align:right">${tr("Members", "Miembros")}</th><th style="text-align:right">${tr("Spend", "Inversión")}</th><th style="text-align:right">${tr("Cost / member", "Costo / miembro")}</th></tr></thead>
+        <thead><tr><th>${tr("Campaign", "Campaña")}</th><th>${tr("Status", "Estado")}</th><th style="text-align:right">Leads</th><th style="text-align:right">${tr("Members", "Miembros")}</th><th style="text-align:right">${tr("Spend", "Inversión")}</th><th style="text-align:right">${tr("Cost / member", "Costo / miembro")}</th></tr></thead>
         <tbody>${campRows}</tbody>
       </table></div>
     </div>
     <div class="crmcard" style="margin-bottom:0">
       <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Attribution", "Atribución")}</div>
-        <div class="ccdesc">${tr("Platform claims vs Glofox reality", "Lo que claman las plataformas vs la realidad Glofox")}</div></div></div>
+        <div class="ccdesc">${tr("Platform claims vs Glofox reality · month to date; the closed verdict ships in the Monthly Report", "Claims de plataformas vs realidad Glofox · mes en curso; el veredicto cerrado sale en el Reporte Mensual")}</div></div></div>
       <div class="dist">${attRows}</div>
       <div class="evnote" style="margin-top:12px">${esc(pm.attribution.note)}</div>
     </div>
