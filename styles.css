@@ -45,6 +45,13 @@
   --warnO: #ea580c;
   --mint: #0f9d7a;
 
+  /* escala de chart del template (idéntica en ambos modos) */
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
   --font: "Geist", ui-sans-serif, system-ui, sans-serif;
   --mono: "Geist Mono", ui-monospace, monospace;
   --sidebar-w: 244px;
@@ -1700,3 +1707,38 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .met { font-size: 10.5px; color: var(--muted-foreground); flex: none; }
 .mevmore { font-size: 10.5px; color: var(--muted-foreground); padding: 2px 4px; cursor: default; }
 @media (max-width: 1100px) { .acgrid, .acgrid2 { grid-template-columns: 1fr; } .mcell { min-height: 84px; } .asrow { grid-template-columns: 1fr auto; } .asl { display: none; } }
+
+/* ================= Class Status (assignment-status port) + Performance exacto + calendar tones ================= */
+.gleg { display: flex; gap: 16px; margin-bottom: 12px; }
+.gleg span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted-foreground); }
+.gleg i { width: 8px; height: 8px; border-radius: 2px; }
+.gleg i.b2 { background: var(--chart-2); } .gleg i.b3 { background: var(--chart-3); } .gleg i.bd { background: var(--destructive); }
+.gchart { display: flex; align-items: flex-end; gap: 8px; height: 235px; background: linear-gradient(to top, var(--border) 1px, transparent 1px); background-size: 100% 25%; }
+.gcol { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; cursor: default; }
+.gbars { display: flex; align-items: flex-end; gap: 4px; flex: 1; width: 100%; justify-content: center; }
+.gbar { width: 20px; border-radius: 4px; border: 1px solid; }
+.gbar.b2 { background-color: color-mix(in oklab, var(--chart-2) 70%, transparent); border-color: color-mix(in oklab, var(--chart-2) 50%, transparent);
+  background-image: radial-gradient(circle at 1.5px 1.5px, color-mix(in oklab, var(--chart-2) 28%, transparent) .8px, transparent .95px), radial-gradient(circle at 4.5px 4.5px, color-mix(in oklab, var(--chart-2) 28%, transparent) .8px, transparent .95px); background-size: 6px 6px; }
+.gbar.b3 { background-color: color-mix(in oklab, var(--chart-3) 70%, transparent); border-color: color-mix(in oklab, var(--chart-3) 50%, transparent);
+  background-image: radial-gradient(circle at 1.5px 1.5px, color-mix(in oklab, var(--chart-3) 28%, transparent) .8px, transparent .95px), radial-gradient(circle at 4.5px 4.5px, color-mix(in oklab, var(--chart-3) 28%, transparent) .8px, transparent .95px); background-size: 6px 6px; }
+.gbar.bd { background-color: color-mix(in oklab, var(--destructive) 70%, transparent); border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+  background-image: radial-gradient(circle at 1.5px 1.5px, color-mix(in oklab, var(--destructive) 28%, transparent) .8px, transparent .95px), radial-gradient(circle at 4.5px 4.5px, color-mix(in oklab, var(--destructive) 28%, transparent) .8px, transparent .95px); background-size: 6px 6px; }
+.gcol > span { font-size: 11.5px; color: var(--muted-foreground); }
+.phwrap { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 8px 0; }
+.phwrap > i { position: absolute; top: 0; bottom: 0; border-left: 1px dashed color-mix(in oklab, var(--border) 80%, transparent); pointer-events: none; }
+.phwrap > i:nth-of-type(1) { left: calc(44px + (100% - 44px) * .25); }
+.phwrap > i:nth-of-type(2) { left: calc(44px + (100% - 44px) * .5); }
+.phwrap > i:nth-of-type(3) { left: calc(44px + (100% - 44px) * .75); }
+.phrow2 { display: flex; align-items: center; gap: 10px; }
+.phlab { width: 34px; flex: none; font-size: 11px; color: var(--muted-foreground); }
+.phtrack2 { position: relative; flex: 1; height: 32px; border-radius: 999px; background: color-mix(in oklab, var(--chart-3) 18%, transparent); }
+.phtrack2 i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--chart-3); border-radius: 999px; min-width: 86px; }
+.phav { position: absolute; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 999px; background: var(--muted); border: 1px solid color-mix(in oklab, var(--foreground) 15%, var(--muted)); display: inline-flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; color: var(--foreground); }
+.phtrack2 b { position: absolute; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 500; color: oklch(0.985 0 0); white-space: nowrap; }
+.phtrack2 em { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-style: normal; font-size: 11px; font-weight: 500; color: var(--foreground); font-variant-numeric: tabular-nums; }
+.mev img { width: 18px; height: 18px; border-radius: 4px; object-fit: cover; flex: none; }
+.mev { padding: 3px 5px; margin-bottom: 2px; }
+.mev.hot { background: color-mix(in oklab, var(--green) 14%, transparent); }
+.mev.hot:hover { background: color-mix(in oklab, var(--green) 22%, transparent); }
+.mev.low { background: color-mix(in oklab, var(--warnY) 10%, transparent); }
+.mev.low:hover { background: color-mix(in oklab, var(--warnY) 18%, transparent); }

@@ -38,8 +38,8 @@ const SECTIONS_SIMPLE = [
   { group: "Your gym · live" },
   { id: "home", label: "Overview", badge: () => DATA.today.do.length, hot: true },
   { id: "hours", label: "Hours" },
-  { id: "classes", label: "Classes" },
   { id: "calendar", label: "Calendar" },
+  { id: "classes", label: "Classes" },
   { group: "More members" },
   { id: "grow", label: "Grow" },
   { id: "pipeline", label: "Pipeline", badge: () => DATA.pipeline.cards.filter(c => c.breach).length, hot: true },
@@ -71,8 +71,8 @@ const SECTIONS_FULL = [
   { id: "reviews", label: "Review Signal", badge: () => DATA.reviews.filter(r => r.classification === "OPERATIONAL" && !r.reply).length, hot: true },
   { id: "report", label: "Morning Report" },
   { group: "Gym OS · Glofox + BioStar" },
-  { id: "classes", label: "Classes" },
   { id: "calendar", label: "Calendar" },
+  { id: "classes", label: "Classes" },
   { id: "members", label: "Members" },
   { id: "access", label: "Access Control" },
   { group: "Growth" },
@@ -2448,16 +2448,55 @@ function vClassStats() {
     </div>`;
   }).join("");
 
+  /* Class Status: port de assignment-status.tsx (barras agrupadas con patrón
+     de puntos): Booked / Open seats / Waitlist por clase. */
+  const groups = C.grid.slice(0, 5).map(g => {
+    const li = C.list.find(x => x.name === g.cls) || { cap: 20 };
+    const avg = Math.round(g.slots.reduce((a, b) => a + b, 0) / g.slots.length);
+    return {
+      abbr: g.cls.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase(),
+      name: g.cls, booked: avg, open: Math.max(0, li.cap - avg),
+      wait: (g.wait || []).reduce((a, b) => a + b, 0),
+    };
+  });
+  const gmax = Math.max.apply(null, groups.flatMap(g => [g.booked, g.open, g.wait])) * 1.1;
+  const gCols = groups.map(g => `
+    <div class="gcol" data-tip="${esc(g.name)}: ${g.booked} ${tr("booked", "reservados")} · ${g.open} ${tr("open", "libres")} · ${g.wait} ${tr("waitlist", "espera")}">
+      <div class="gbars">
+        <i class="gbar b2" style="height:${Math.max(4, Math.round(g.booked / gmax * 100))}%"></i>
+        <i class="gbar b3" style="height:${Math.max(4, Math.round(g.open / gmax * 100))}%"></i>
+        <i class="gbar bd" style="height:${Math.max(4, Math.round(g.wait / gmax * 100))}%"></i>
+      </div>
+      <span>${g.abbr}</span>
+    </div>`).join("");
+  const gLegend = `
+    <div class="gleg">
+      <span><i class="b2"></i>${tr("Booked", "Reservados")}</span>
+      <span><i class="b3"></i>${tr("Open seats", "Cupos libres")}</span>
+      <span><i class="bd"></i>${tr("Waitlist", "Lista de espera")}</span>
+    </div>`;
+
+  /* Performance Highlights: port exacto del custom bar de performance-highlights.tsx:
+     track tintado chart-3 18%, fill sólido chart-3, avatares dentro, % al final. */
   const top = C.grid.map(g => {
     const s = clsStatsFor(g.cls);
-    return { name: g.cls, avg: s.avg, inst: s.info.inst || s.li.coach || "Team" };
+    return { name: g.cls, avg: s.avg, inst: s.info.inst || s.li.coach || "Team coach" };
   }).sort((a, b) => b.avg - a.avg).slice(0, 4);
-  const phRows = top.map(t => `
-    <div class="phrow">
-      <span class="phd">${esc(t.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>
-      <div class="phtrack"><i style="width:${t.avg}%"></i><b>${esc(t.name)}</b></div>
-      <span class="phv mono">${t.avg}%</span>
-    </div>`).join("");
+  const phRows = top.map(t => {
+    const abbr = t.name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+    const avs = [t.name.split(" ").map(w => w[0]).join("").slice(0, 2), t.inst.split(" ").map(w => w[0]).join("").slice(0, 2)]
+      .map((a, i) => `<span class="phav" style="left:${8 + i * 14}px">${esc(a)}</span>`).join("");
+    return `
+    <div class="phrow2">
+      <span class="phlab mono">${abbr}</span>
+      <div class="phtrack2">
+        <i style="width:${Math.max(t.avg, 24)}%"></i>
+        ${avs}
+        <b style="left:${8 + 2 * 14 + 16}px">${esc(t.name)}</b>
+        <em class="mono">${t.avg}%</em>
+      </div>
+    </div>`;
+  }).join("");
 
   /* próximas instancias reales del horario semanal */
   const now = new Date();
@@ -2505,16 +2544,17 @@ function vClassStats() {
       <div class="asched">${schedRows}</div>
     </div>
     <div class="crmcard" style="margin-bottom:0">
-      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Class Statistics", "Estadísticas por clase")}</div>
-        <select id="clsPick" class="select" style="height:30px;width:auto;font-size:12.5px" onchange="clsStatMount()">${opts}</select></div>
-      <div id="clsStatBox"></div>
+      <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Class Status", "Estado por clase")}</div>
+        <button class="btn ghost sm" onclick="location.hash='#hours'">${tr("View Report", "Ver reporte")} →</button></div>
+      ${gLegend}
+      <div class="gchart">${gCols}</div>
     </div>
   </div>
   <div class="acgrid2">
     <div class="crmcard" style="margin-bottom:0">
       <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Performance Highlights", "Las que más llenan")}</div>
         <button class="btn ghost sm" onclick="location.hash='#hours'">${tr("View Insights", "Ver insights")} →</button></div>
-      ${phRows}
+      <div class="phwrap"><i></i><i></i><i></i>${phRows}</div>
       <p class="ccdesc" style="margin-top:10px">${tr("Average fill across the week · SAMPLE volumes on the real public schedule", "Ocupación promedio de la semana · volúmenes SAMPLE sobre el horario público real")}</p>
     </div>
     <div class="crmcard" style="margin-bottom:0">
@@ -2522,6 +2562,11 @@ function vClassStats() {
         <button class="btn ghost sm" onclick="location.hash='#calendar'">${tr("View Calendar", "Ver calendario")} →</button></div>
       ${ueRows}
     </div>
+  </div>
+  <div class="crmcard" style="margin-top:14px">
+    <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Class Statistics", "Estadísticas por clase")}</div>
+      <select id="clsPick" class="select" style="height:30px;width:auto;font-size:12.5px" onchange="clsStatMount()">${opts}</select></div>
+    <div id="clsStatBox"></div>
   </div>
   ${demoNote()}`;
 }
@@ -2555,10 +2600,18 @@ function vCalendar() {
     const list = dow <= 5 ? (byDow[dow] || []) : [];
     events += list.length;
     const isToday = CAL_OFF === 0 && dayN === now.getDate();
-    const shown = list.slice(0, 3).map(c => `
-      <div class="mev click" onclick="openClass('${c.name.replace(/'/g, "\\'")}')" data-tip="${esc(c.name)} · ${c.h % 12 || 12}:00 ${c.h < 12 ? "AM" : "PM"}">
-        <span class="men">${esc(c.name)}</span><span class="met mono">${fmtT(c.h)}</span>
-      </div>`).join("");
+    const shown = list.slice(0, 3).map(c => {
+      const g = C.grid.find(x => x.cls === c.name);
+      const li = C.list.find(x => x.name === c.name) || { cap: 20 };
+      const booked = g ? (g.slots[dow] || 0) : 0;
+      const pct = Math.round(booked / li.cap * 100);
+      const tone = pct >= 95 ? "hot" : pct < 55 ? "low" : "";
+      const photo = (C.photos || {})[c.name];
+      return `
+      <div class="mev click ${tone}" onclick="openClass('${c.name.replace(/'/g, "\\'")}')" data-tip="${esc(c.name)} · ${c.h % 12 || 12}:00 ${c.h < 12 ? "AM" : "PM"} · ${booked}/${li.cap}${pct >= 95 ? " · " + tr("FULL", "LLENA") : pct < 55 ? " · " + tr("room to sell", "espacio por vender") : ""}">
+        ${photo ? `<img src="${photo}" alt="" loading="lazy">` : ""}<span class="men">${esc(c.name)}</span><span class="met mono">${fmtT(c.h)}</span>
+      </div>`;
+    }).join("");
     const more = list.length > 3 ? `<div class="mevmore" data-tip="${esc(list.slice(3).map(c => `${c.name} ${fmtT(c.h)}`).join(" · "))}">+${list.length - 3} ${tr("more", "más")}</div>` : "";
     cells += `<div class="mcell${isToday ? " istoday" : ""}"><span class="mnum mono">${dayN}</span>${shown}${more}</div>`;
   }
