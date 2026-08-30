@@ -265,7 +265,7 @@ function fmtDate(iso) {
 }
 
 function demoNote() {
-  return `<div class="demo-note"><div class="alert">${I.alert}<div class="atitle">Demo data policy</div><div class="adesc">Every value is captured public evidence (sweeps 2026-08-20 and 2026-08-24) except draft replies, thresholds and rows marked SAMPLE, which are proposals. No internal City Zero data.</div></div></div>`;
+  return `<div class="demo-note"><div class="alert">${I.alert}<div class="atitle">${tr("Demo data policy", "Política de datos del demo")}</div><div class="adesc">${tr("Every value is captured public evidence (sweeps 2026-08-20 and 2026-08-24) except draft replies, thresholds and rows marked SAMPLE, which are proposals. No internal City Zero data.", "Cada valor es evidencia pública capturada (barridos 2026-08-20 y 2026-08-24) excepto borradores de respuesta, umbrales y filas marcadas SAMPLE, que son propuestas. Cero datos internos de City Zero.")}</div></div></div>`;
 }
 
 /* ---------- sections ---------- */
@@ -3213,7 +3213,7 @@ function vPaidMedia() {
 
   const serviceCards = pm.service.map((x, i) => `
     <div class="mcard" style="gap:10px">
-      <div class="mhead2"><span class="mono" style="font-size:11px;color:#23E3A4">0${i + 1}</span><span>${esc(x.step)}</span></div>
+      <div class="mhead2"><span class="mono" style="font-size:11px;color:#23E3A4">0${i + 1}</span><span>${tr(x.step, ({ "Plan": "Planear", "Launch": "Lanzar", "Optimize weekly": "Optimizar semanal", "Report monthly": "Reportar mensual" })[x.step] || x.step)}</span></div>
       <p style="font-size:12.5px;color:var(--muted-foreground);line-height:1.55">${esc(x.what)}</p>
     </div>`).join("");
 
@@ -3380,12 +3380,12 @@ function vPaidMedia() {
     <div class="panel">
       <div class="ptitle">Spend to members, one funnel <span class="hint">SAMPLE scenario · leads land in the CRM Pipeline with their campaign attached</span></div>
       <div class="dist">${funnelRows}</div>
-      <div class="evnote" style="margin-top:14px">${esc(pm.unitMath.anchor)} Two of the leads on the <a href="#pipeline" style="color:var(--foreground)">Pipeline board</a> carry their ad campaign as source: that handoff is the integration.</div>
+      <div class="evnote" style="margin-top:14px">${tr(pm.unitMath.anchor, "Un plan de $179.99 casi devuelve la adquisición en el mes uno. El anual de $1,900 la devuelve 12 veces. Matemática ilustrativa sobre volúmenes sample; los planes y precios son los públicos reales.")} ${tr("Two of the leads on the", "Dos de los leads del")} <a href="#pipeline" style="color:var(--foreground)">${tr("Pipeline board", "tablero del Pipeline")}</a> ${tr("carry their ad campaign as source: that handoff is the integration.", "llevan su campaña de ads como fuente: ese handoff es la integración.")}</div>
     </div>
     <div class="panel">
       <div class="ptitle" style="font-size:13px">Step 0: the plumbing <span class="hint">real, from their own hiring post</span></div>
       <ul class="tl">${prereqRows}</ul>
-      <div class="evnote">You cannot buy Meta media with Facebook and Instagram disconnected and phantom pages splitting the brand. The <a href="#meta" style="color:var(--foreground)">Meta Health cleanup</a> is the first week of this engagement.</div>
+      <div class="evnote">${tr("You cannot buy Meta media with Facebook and Instagram disconnected and phantom pages splitting the brand. The", "No se puede comprar media en Meta con Facebook e Instagram desconectados y páginas fantasma dividiendo la marca. La")} <a href="#meta" style="color:var(--foreground)">${tr("Meta Health cleanup", "limpieza de Meta Health")}</a> ${tr("is the first week of this engagement.", "es la primera semana de este engagement.")}</div>
       <hr class="separator">
       <div class="evnote" style="margin-top:0"><b style="color:var(--foreground)">The moat, in one line:</b> ${esc(pm.moat)}</div>
     </div>
@@ -3459,7 +3459,7 @@ function vStore() {
 
   const dateStr = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
   return `
-  ${topbar("City Zero Store", tr("THE RETAIL LAYER GLOFOX ALREADY SUPPORTS: MERCH, SHAKES AND DAY PASSES, MEASURED", "LA CAPA RETAIL QUE GLOFOX YA SOPORTA: MERCH, SHAKES Y DAY PASSES, MEDIDOS"), `<span class="chip amber">PHASE 2 · CONCEPT · SAMPLE DATA</span>`)}
+  ${topbar("City Zero Store", tr("THE RETAIL LAYER GLOFOX ALREADY SUPPORTS: MERCH, SHAKES AND DAY PASSES, MEASURED", "LA CAPA RETAIL QUE GLOFOX YA SOPORTA: MERCH, SHAKES Y PASES DE DÍA, MEDIDOS"), `<span class="chip amber">PHASE 2 · CONCEPT · SAMPLE DATA</span>`)}
   <div class="crmhead" style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
     <div><h2>${tr("Store Overview", "Resumen de tienda")}</h2><p>${esc(dateStr.charAt(0).toUpperCase() + dateStr.slice(1))}</p></div>
     <div class="ccact">
