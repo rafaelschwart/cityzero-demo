@@ -3275,6 +3275,16 @@ function vPaidMedia() {
   }
   const qmax = Math.max.apply(null, q1.concat(q2)) * 1.15;
   const qp = a => _smoothPath(a.map((v, i) => [i / (n - 1) * W, H - v / qmax * H]));
+  const qlf = A.d === 1
+    ? { format: dd => new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { hour: "numeric" }).format(dd) }
+    : new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
+  window._CH.quality = {
+    n, labels: q1.map((v, i) => qlf.format(new Date(Date.now() - (n - 1 - i) * (A.d * 864e5 / (n - 1))))),
+    rows: [
+      [tr("Real leads", "Leads reales"), q1.map(v => v.toFixed(1))],
+      [tr("Junk clicks", "Clicks basura"), q2.map(v => v.toFixed(1)), "color-mix(in oklab, var(--foreground) 40%, transparent)"],
+    ],
+  };
   const rtBars = Array.from({ length: 28 }, (_, i) => {
     const h = 22 + ((i * 29) % 61);
     return `<span class="rtb" style="height:${h}%"></span>`;
@@ -3343,10 +3353,13 @@ function vPaidMedia() {
       <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Lead Quality", "Calidad de leads")}</div>
         <div class="ccdesc">${tr("Real leads vs junk clicks per day · the anomaly cross that cuts waste", "Leads reales vs clicks basura por día · el cruce de anomalías que corta el desperdicio")}</div></div>
         <span class="actleg" style="gap:14px"><span class="actleg"><i></i>${tr("Real leads", "Leads reales")}</span><span class="actleg dim"><i style="border-radius:0;height:2px"></i>${tr("Junk clicks", "Clicks basura")}</span></span></div>
-      <svg class="actsvg" style="height:230px" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
-        <path d="${qp(q1)}" fill="none" stroke="currentColor" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
-        <path d="${qp(q2)}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>
-      </svg>
+      <div style="position:relative" onmousemove="chHover(event,'quality')" onmouseleave="chLeave(event)">
+        <svg class="actsvg" style="height:230px" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+          <path d="${qp(q1)}" fill="none" stroke="currentColor" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+          <path d="${qp(q2)}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>
+        </svg>
+        ${CH_HOV}
+      </div>
       <div class="cflowx" style="margin-top:8px">${adsXL(A.d).map(l => `<span>${l}</span>`).join("")}</div>
     </div>
     <div class="crmcard" style="margin-bottom:0">
@@ -3404,6 +3417,28 @@ function vPaidMedia() {
   ${demoNote()}`;
 }
 
+/* Hover genérico de charts (cursor + tooltip estilo Recharts) para Store y Ads.
+   Registro por vista en window._CH[key] = { n, labels[], rows: [[label, vals[], color?]] }. */
+window._CH = {};
+function chHover(e, key) {
+  const c = window._CH[key]; if (!c) return;
+  const wrap = e.currentTarget;
+  const hov = wrap.querySelector(".chh"); if (!hov) return;
+  const r = wrap.getBoundingClientRect();
+  const x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+  const i = Math.max(0, Math.min(c.n - 1, Math.round(x / r.width * (c.n - 1))));
+  const px = i / (c.n - 1) * r.width;
+  hov.querySelector(".chx").style.left = px + "px";
+  const tip = hov.querySelector(".chtip");
+  tip.innerHTML = `<b>${c.labels[i]}</b>` + c.rows.map(rw =>
+    `<span><i style="background:${rw[2] || "var(--foreground)"}"></i>${rw[0]}<em>${rw[1][i]}</em></span>`).join("");
+  const tw = tip.offsetWidth || 150;
+  tip.style.left = (px + tw + 22 > r.width ? px - tw - 12 : px + 12) + "px";
+  hov.classList.add("on");
+}
+function chLeave(e) { const hov = e.currentTarget.querySelector(".chh"); if (hov) hov.classList.remove("on"); }
+const CH_HOV = `<div class="chh"><i class="chx"></i><div class="chtip"></div></div>`;
+
 /* ---------- CITY ZERO STORE (port de dashboard/ecommerce) ---------- */
 
 function vStore() {
@@ -3431,22 +3466,38 @@ function vStore() {
   }
   const lmax = Math.max.apply(null, line) * 1.12;
   const lpath = line.map((v, i) => (i ? "L" : "M") + (i / (n - 1) * W).toFixed(1) + "," + (H - v / lmax * H).toFixed(1)).join("");
-  const salesBars = Array.from({ length: n }, (_, i) => `<span class="stb" style="height:${14 + ((i * 23) % 34)}%"></span>`).join("");
+  const bh = Array.from({ length: n }, (_, i) => 14 + ((i * 23) % 34));
+  const salesBars = bh.map(h => `<span class="stb" style="height:${h}%"></span>`).join("");
   const now = new Date();
   const mfmt = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", year: "2-digit" });
   const mLabels = [];
   for (let i = 11; i >= 0; i--) mLabels.push(mfmt.format(new Date(now.getFullYear(), now.getMonth() - i, 1)).replace(".", ""));
+  const wlf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { month: "short", day: "numeric" });
+  window._CH.sales = {
+    n, labels: line.map((v, i) => wlf.format(new Date(Date.now() - (n - 1 - i) * 7 * 864e5))),
+    rows: [
+      [tr("Sales", "Ventas"), line.map(v => "$" + (Math.round(v * 25 / 10) * 10).toLocaleString("en-US"))],
+      [tr("Orders", "Órdenes"), bh.map(h => Math.round(h / 2)), "color-mix(in oklab, var(--foreground) 35%, transparent)"],
+    ],
+  };
 
   /* Store Traffic: barras finas 24h + línea roja de anomalías */
-  const tBars = Array.from({ length: 56 }, (_, i) => {
+  const th = Array.from({ length: 56 }, (_, i) => {
     let h = 12 + ((i * 31) % 52);
     if (i % 13 === 0) h += 34;
-    return `<span class="stb thin" style="height:${h}%"></span>`;
-  }).join("");
-  const aPath = Array.from({ length: 56 }, (_, i) => {
-    const y = 212 - (i % 17 === 0 ? 26 + (i * 7) % 20 : ((i * 11) % 8));
-    return (i ? "L" : "M") + (i / 55 * W).toFixed(1) + "," + y;
-  }).join("");
+    return h;
+  });
+  const av = Array.from({ length: 56 }, (_, i) => i % 17 === 0 ? 8 + (i * 7) % 9 : ((i * 11) % 8) ? 1 : 0);
+  const tBars = th.map(h => `<span class="stb thin" style="height:${h}%"></span>`).join("");
+  const aPath = av.map((v, i) => (i ? "L" : "M") + (i / 55 * W).toFixed(1) + "," + (212 - v * 2.6).toFixed(1)).join("");
+  const hlf = new Intl.DateTimeFormat(LANG === "es" ? "es" : "en-US", { hour: "numeric" });
+  window._CH.traffic = {
+    n: 56, labels: th.map((v, i) => hlf.format(new Date(Date.now() - (55 - i) * 24 * 3600e3 / 55))),
+    rows: [
+      [tr("Visitors", "Visitantes"), th.map(h => h * 6)],
+      [tr("Anomalies", "Anomalías"), av, "var(--destructive)"],
+    ],
+  };
 
   const srcRows = st.sources.map(s => `
     <div class="stsrc">
@@ -3474,11 +3525,12 @@ function vStore() {
     <div class="crmcard stcells" style="margin-bottom:0;padding:0">${cells}</div>
     <div class="crmcard" style="margin-bottom:0">
       <div class="cchead"><div class="cctitle" style="font-size:14px">${tr("Sales Overview", "Resumen de ventas")}</div>${CRM_I.arrUR.replace("<svg", "<svg style='width:15px;height:15px;color:var(--muted-foreground)'")}</div>
-      <div class="stsales">
+      <div class="stsales" onmousemove="chHover(event,'sales')" onmouseleave="chLeave(event)">
         <div class="stbars">${salesBars}</div>
         <svg class="actsvg glow" viewBox="0 0 1000 230" preserveAspectRatio="none" aria-hidden="true">
           <path d="${lpath}" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
         </svg>
+        ${CH_HOV}
       </div>
       <div class="cflowx" style="margin-top:8px">${mLabels.map(m => `<span>${m}</span>`).join("")}</div>
     </div>
@@ -3488,11 +3540,12 @@ function vStore() {
       <div class="cchead"><div><div class="cctitle" style="font-size:14px">${tr("Store Traffic", "Tráfico de la tienda")}</div>
         <div class="ccdesc" style="font-size:16px;color:var(--foreground);font-weight:600">12.9K ${tr("visits", "visitas")} <span class="chip gray" style="font-size:9px;padding:1px 6px;vertical-align:2px">SAMPLE</span></div></div>
         <span class="actleg" style="gap:14px"><span class="actleg"><i style="background:var(--destructive)"></i>${tr("Anomalies", "Anomalías")}</span><span class="actleg dim"><i></i>${tr("Visitors", "Visitantes")}</span></span></div>
-      <div class="sttraffic">
+      <div class="sttraffic" onmousemove="chHover(event,'traffic')" onmouseleave="chLeave(event)">
         <div class="stbars traffic">${tBars}</div>
         <svg class="actsvg red" viewBox="0 0 1000 230" preserveAspectRatio="none" aria-hidden="true">
           <path d="${aPath}" fill="none" stroke="var(--destructive)" stroke-opacity=".8" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
         </svg>
+        ${CH_HOV}
       </div>
       <div class="cflowx" style="margin-top:6px"><span style="text-align:left">${tr("24h ago", "hace 24h")}</span><span style="text-align:right">${tr("now", "ahora")}</span></div>
     </div>

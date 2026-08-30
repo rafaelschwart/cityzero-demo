@@ -1874,3 +1874,37 @@ html:not(.dark) .side-made img.mk-light { display: inline-block; }
 .avatar.avph, .pfava.avph { position: relative; overflow: hidden; }
 .avatar.avph img, .pfava.avph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .shell.collapsed .livesim { display: none; }
+
+/* ================= hover pack: Store + Ads Report (template feel) ================= */
+.chh { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .12s ease; z-index: 6; }
+.chh.on { opacity: 1; }
+.chx { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in oklab, var(--foreground) 30%, transparent); }
+.chtip { position: absolute; top: 8px; min-width: 150px; background: var(--popover); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 8px 11px; font-size: 12px; }
+.chtip b { display: block; font-size: 11.5px; font-weight: 600; margin-bottom: 5px; }
+.chtip span { display: flex; align-items: center; gap: 7px; color: var(--muted-foreground); padding: 1.5px 0; }
+.chtip span i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.chtip span em { margin-left: auto; font-style: normal; font-family: var(--mono); font-size: 11.5px; color: var(--foreground); font-variant-numeric: tabular-nums; padding-left: 16px; }
+.stcell { transition: background .15s ease; }
+.stcell:hover { background: color-mix(in oklab, var(--accent) 45%, transparent); }
+.astile { transition: background .15s ease; }
+.astile:hover { background: color-mix(in oklab, var(--accent) 40%, transparent); }
+.stsrc { border-radius: 8px; padding-left: 6px; padding-right: 6px; margin-left: -6px; margin-right: -6px; transition: background .15s ease; }
+.stsrc:hover { background: color-mix(in oklab, var(--accent) 45%, transparent); }
+.stsrc:hover .stst i { background: color-mix(in oklab, var(--foreground) 32%, transparent); }
+.rtrow { border-radius: 6px; padding-left: 6px; padding-right: 6px; margin-left: -6px; margin-right: -6px; transition: background .15s ease; }
+.rtrow:hover { background: color-mix(in oklab, var(--accent) 45%, transparent); }
+.crmcard .cchead > svg { transition: transform .18s ease; }
+.crmcard:hover .cchead > svg { transform: translate(2px, -2px); }
+.crcard { transition: transform .18s ease, border-color .15s ease, box-shadow .18s ease; }
+.crcard:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--foreground) 22%, var(--border)); box-shadow: var(--shadow-lg); }
+.crcard { overflow: hidden; }
+.crcard img { transition: transform .35s ease; }
+.crcard:hover img { transform: scale(1.05); }
+.crmtable tbody tr { transition: background .12s ease; }
+.crmtable tbody tr:hover { background: color-mix(in oklab, var(--muted) 40%, transparent); }
+.dist .drow .fill { transition: filter .15s ease; }
+.dist .drow:hover .fill { filter: brightness(1.3); }
+.stprod { transition: background .15s ease; border-radius: 6px; padding-left: 6px; padding-right: 6px; margin-left: -6px; margin-right: -6px; }
+.stprod:hover { background: color-mix(in oklab, var(--accent) 40%, transparent); }
+.stprod:hover .kptrack i { filter: brightness(1.3); }
+@media (prefers-reduced-motion: reduce) { .crcard, .crcard img, .crmcard .cchead > svg { transition: none; } }
