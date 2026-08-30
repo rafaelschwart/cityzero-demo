@@ -710,36 +710,132 @@ function vGrow() {
 /* Pulse Intelligence: recomendaciones desde los datos + el loop que aprende
    de cada accept/dismiss del operador. CONCEPT: entrena con sus numeros reales
    tras el go-live; aqui el loop es visible y persistente. */
+/* Acciones correctivas de Pulse Intelligence: cada tarjeta = señal observada
+   en la operación (Glofox/BioStar/Ads) → acción concreta → impacto estimado.
+   Apply/Dismiss persiste vía aiReact y alimenta el loop de aprendizaje. */
+function axCard(r) {
+  const st = STATE.aiRecs[r.id];
+  return `
+  <div class="axc ${st === "accepted" ? "ok" : ""} ${st === "dismissed" ? "off" : ""}">
+    <div class="axh">
+      <span class="chip ${r.kind[1]}">${r.kind[0]}</span>
+      <span class="axsrc mono">${r.src}</span>
+      <span class="axconf mono" data-tip="${tr("model confidence", "confianza del modelo")}">${r.conf}%</span>
+    </div>
+    <b class="axt">${r.t}</b>
+    <div class="axev">${r.ev.map(e => `<span><i></i>${e}</span>`).join("")}</div>
+    <div class="axdo"><b>${tr("Do this:", "Haz esto:")}</b> ${r.act}</div>
+    <div class="axf">
+      <span class="aximp">${r.imp}<em>${tr("est. impact", "impacto est.")}</em></span>
+      ${st === "accepted" ? `<span class="chip green">${tr("IN THE PLAN", "EN EL PLAN")}</span>` : ""}
+      ${st === "dismissed" ? `<span class="chip gray">${tr("DISMISSED", "DESCARTADA")}</span>` : ""}
+      <span class="axbtns">
+      ${st ? `<button class="btn ghost xs" onclick="aiReact('${r.id}', null)">${tr("Undo", "Deshacer")}</button>`
+      : `<button class="btn solid xs" onclick="aiReact('${r.id}', 'accepted')">${tr("Apply", "Aplicar")}</button>
+         <button class="btn ghost xs" onclick="aiReact('${r.id}', 'dismissed')">${tr("Dismiss", "Descartar")}</button>`}
+      </span>
+    </div>
+  </div>`;
+}
+
+const growAx = () => [
+  {
+    id: "ax-zumba2", kind: [tr("HIGH IMPACT", "ALTO IMPACTO"), "green"], conf: 92, src: "GLOFOX + BIOSTAR",
+    t: tr("Open a second Zumba slot on Tuesday 7 PM", "Abre un segundo horario de Zumba: martes 7 PM"),
+    ev: [
+      tr("Zumba averages 96% fill; every dance format beats 83% while strength averages 58%", "Zumba promedia 96% de ocupación; todo formato de baile supera 83% mientras fuerza promedia 58%"),
+      tr("19 people sat on waitlists this week: Sat 9 · Tue 6 · Thu 4", "19 personas esperaron cupo esta semana: Sáb 9 · Mar 6 · Jue 4"),
+    ],
+    act: tr("Create the slot in Glofox; the Campaigns waitlist sequence invites the 19 automatically.", "Crea el horario en Glofox; la secuencia de waitlist de Campaigns invita a los 19 automáticamente."),
+    imp: tr("+6 members/mo", "+6 miembros/mes"),
+  },
+  {
+    id: "ax-tourconf", kind: [tr("QUICK WIN", "VICTORIA RÁPIDA"), "amber"], conf: 88, src: "GLOFOX",
+    t: tr("Text-confirm the 3 unconfirmed tours before 3 PM", "Confirma por texto los 3 tours sin confirmar antes de las 3 PM"),
+    ev: [
+      tr("Confirmed tours show up 78% of the time; unconfirmed only 31%", "Los tours confirmados llegan 78% de las veces; los sin confirmar solo 31%"),
+      tr("Melissa R. (today 5 PM) and 2 more still have no reply", "Melissa R. (hoy 5 PM) y 2 más siguen sin respuesta"),
+    ],
+    act: tr("One tap in Pipeline fires the confirm-by-text play; front desk owns the replies.", "Un tap en Pipeline dispara la confirmación por texto; recepción atiende las respuestas."),
+    imp: tr("+1–2 joins this week", "+1–2 altas esta semana"),
+  },
+  {
+    id: "ax-budget", kind: [tr("HIGH IMPACT", "ALTO IMPACTO"), "green"], conf: 84, src: "PULSE + ADS",
+    t: tr("Move $120/week from Google generic to Meta Guided Tour", "Mueve $120/semana de Google genérica a Meta Guided Tour"),
+    ev: [
+      tr("Cost per lead $19 vs $31; Guided Tour delivered 9 of this month's 19 members", "Costo por lead $19 vs $31; Guided Tour trajo 9 de los 19 miembros del mes"),
+      tr("Google generic produced 1 member at $220 cost", "Google genérica produjo 1 miembro a $220 de costo"),
+    ],
+    act: tr("The shift is queued in the Ads Report; approving applies it at midnight.", "El movimiento está en cola en el Reporte de Ads; al aprobarlo aplica a medianoche."),
+    imp: tr("−$42 cost/member", "−$42 costo/miembro"),
+  },
+  {
+    id: "ax-reviews", kind: [tr("QUICK WIN", "VICTORIA RÁPIDA"), "amber"], conf: 90, src: "GOOGLE · REAL",
+    t: tr("Answer the 2 open Google reviews today", "Responde hoy las 2 reseñas abiertas de Google"),
+    ev: [
+      tr("4.8 stars across 138 REAL reviews is the top organic converter of tours", "4.8 estrellas en 138 reseñas REALES es el mejor convertidor orgánico de tours"),
+      tr("2 unanswered operational reviews sit on page one of the listing", "2 reseñas operativas sin responder viven en la página uno del listing"),
+    ],
+    act: tr("Two approved drafts wait in Review Signal; posting them takes 3 minutes.", "Dos borradores aprobados esperan en Review Signal; publicarlos toma 3 minutos."),
+    imp: tr("protects the #1 lead source", "protege la fuente #1 de leads"),
+  },
+];
+
+const keepAx = () => [
+  {
+    id: "ax-paylink", kind: [tr("REVENUE LEAK", "FUGA DE INGRESO"), "red"], conf: 95, src: "STRIPE + BIOSTAR",
+    t: tr("Send payment links to Laura Q. and Oscar G. right now", "Envía links de pago a Laura Q. y Oscar G. ahora mismo"),
+    ev: [
+      tr("$310 in failed charges, both from members who trained this week", "$310 en cobros fallidos, ambos de miembros que entrenaron esta semana"),
+      tr("Laura badged in yesterday 6:12 PM after two card failures: card problem, not churn", "Laura entró ayer 6:12 PM tras dos fallos de tarjeta: problema de tarjeta, no baja"),
+    ],
+    act: tr("One-tap Stripe link by text from the Keep screen; retries stop the moment it is paid.", "Link de Stripe por texto con un tap desde Keep; los reintentos paran al momento de pagar."),
+    imp: tr("recovers $310 today", "recupera $310 hoy"),
+  },
+  {
+    id: "ax-silence", kind: [tr("HIGH IMPACT", "ALTO IMPACTO"), "green"], conf: 87, src: "BIOSTAR",
+    t: tr("Call the 3 members crossing 14 days of silence", "Llama a los 3 miembros que cruzan 14 días de silencio"),
+    ev: [
+      tr("Past 21 silent days, the odds of ever returning collapse; all 3 are still inside the save window", "Pasados 21 días de silencio, la probabilidad de volver se derrumba; los 3 siguen dentro de la ventana de rescate"),
+      tr("Brandon C. is at day 21, paying $129.99/mo with zero visits", "Brandon C. va en el día 21, pagando $129.99/mes con cero visitas"),
+    ],
+    act: tr("Win-back call with a free class pass; owner: front desk, before closing today.", "Llamada de rescate con un pase de clase gratis; dueño: recepción, antes del cierre de hoy."),
+    imp: tr("saves $389/mo in plans", "salva $389/mes en planes"),
+  },
+  {
+    id: "ax-welcome", kind: [tr("QUICK WIN", "VICTORIA RÁPIDA"), "amber"], conf: 91, src: "GLOFOX + BIOSTAR",
+    t: tr("Welcome-text the 5 first-visit members within 24 hours", "Texto de bienvenida a los 5 de primera visita en menos de 24 horas"),
+    ev: [
+      tr("5 members had their first badge-in this week and no touch yet", "5 miembros tuvieron su primer check-in esta semana y aún sin contacto"),
+      tr("A week-one touch is the cheapest retention lift that exists (SAMPLE pattern)", "Un contacto en la semana uno es el impulso de retención más barato que existe (patrón SAMPLE)"),
+    ],
+    act: tr("Approved template in Campaigns; it sends from City Zero's own number.", "Plantilla aprobada en Campaigns; sale del número propio de City Zero."),
+    imp: tr("+18% week-1 stickiness", "+18% retención semana 1"),
+  },
+  {
+    id: "ax-freeze", kind: [tr("REVENUE LEAK", "FUGA DE INGRESO"), "red"], conf: 82, src: "GLOFOX",
+    t: tr("Offer Diego R. a freeze extension before Sep 1", "Ofrécele a Diego R. extender el freeze antes del 1 de sep"),
+    ev: [
+      tr("His freeze ends Sep 1 with zero visits in the last 12 days", "Su freeze termina el 1 de sep con cero visitas en los últimos 12 días"),
+      tr("Frozen members come back far more often than cancelled ones (SAMPLE pattern)", "Los miembros congelados vuelven mucho más seguido que los cancelados (patrón SAMPLE)"),
+    ],
+    act: tr("One-month extension at $9.99 from the Keep screen; auto-reminder fires at day 20.", "Extensión de un mes a $9.99 desde Keep; el recordatorio automático dispara al día 20."),
+    imp: tr("keeps $199.99/mo alive", "mantiene vivos $199.99/mes"),
+  },
+];
+
 function aiPanel(g) {
   const ai = g.ai;
   if (!ai) return "";
   const fb = Object.keys(STATE.aiRecs).length;
   const conf = (ai.learn.conf[ai.learn.conf.length - 1] + fb * 0.3).toFixed(1);
-  const recs = ai.recs.map(r => {
-    const st = STATE.aiRecs[r.t];
-    return `
-    <div class="airec ${st === "accepted" ? "ok" : ""} ${st === "dismissed" ? "off" : ""}">
-      <div class="aitop">
-        <span class="aiconf mono" data-tip="${tr("model confidence", "confianza del modelo")}">${r.conf}%</span>
-        <b>${esc(r.t)}</b>
-        ${st === "accepted" ? `<span class="chip green">${tr("IN THE PLAN", "EN EL PLAN")}</span>` : ""}
-        ${st === "dismissed" ? `<span class="chip gray">${tr("DISMISSED", "DESCARTADA")}</span>` : ""}
-      </div>
-      <p>${esc(r.d)}</p>
-      <div class="aiev">${tr("Based on", "Basado en")}: ${esc(r.ev)}</div>
-      <div class="aibtns">
-        ${st ? `<button class="btn ghost xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', null)">${tr("Undo", "Deshacer")}</button>`
-             : `<button class="btn xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', 'accepted')">${tr("Apply to plan", "Aplicar al plan")}</button>
-                <button class="btn ghost xs" onclick="aiReact('${r.t.replace(/'/g, "\\'")}', 'dismissed')">${tr("Dismiss", "Descartar")}</button>`}
-      </div>
-    </div>`;
-  }).join("");
+  const recs = growAx().map(axCard).join("");
   const pts = ai.learn.conf.map((v, i) => `${8 + i * 34},${40 - (v - 55) * 1.3}`).join(" ");
   return `
   <div class="grid"><div class="panel wide">
-    <div class="ptitle">Pulse Intelligence
+    <div class="ptitle">${tr("Pulse Intelligence · corrective actions to grow", "Pulse Intelligence · acciones correctivas para crecer")}
       <span class="chip amber" style="margin-left:8px">${tr("CONCEPT · TRAINS ON THEIR DATA AFTER GO-LIVE", "CONCEPT · ENTRENA CON SUS DATOS TRAS EL GO-LIVE")}</span>
-      <span class="hint">${tr("every accept or dismiss below becomes a training signal", "cada aplicar o descartar de abajo se vuelve señal de entrenamiento")}</span></div>
+      <span class="hint">${tr("signal from the operation → concrete action → estimated impact", "señal de la operación → acción concreta → impacto estimado")}</span></div>
     <div class="aigrid">
       <div class="airecs">${recs}</div>
       <div class="ailearn">
@@ -790,6 +886,12 @@ function vKeep() {
     <div class="ltile"><div class="lk">${tr("Recoverable right now", "Recuperable ahora mismo")}</div><div class="lv mono">$${(k.recoverySum || 0).toLocaleString()}</div><div class="lsub">${tr("failed charges from people still training", "cobros fallidos de gente que sigue entrenando")}</div></div>
     <div class="ltile"><div class="lk">${tr("Walking out quietly", "Saliendo en silencio")}</div><div class="lv mono">$${(k.saveSum || 0).toLocaleString()}<span class="lmo">/${tr("mo", "mes")}</span></div><div class="lsub">${tr("active plans with 14+ days of silence", "planes activos con 14+ días de silencio")}</div></div>
   </div>
+  <div class="grid"><div class="panel wide">
+    <div class="ptitle">${tr("Pulse Intelligence · corrective actions to keep them", "Pulse Intelligence · acciones correctivas para retener")}
+      <span class="chip amber" style="margin-left:8px">${tr("CONCEPT · TRAINS ON THEIR DATA AFTER GO-LIVE", "CONCEPT · ENTRENA CON SUS DATOS TRAS EL GO-LIVE")}</span>
+      <span class="hint">${tr("signal from the operation → concrete action → estimated impact", "señal de la operación → acción concreta → impacto estimado")}</span></div>
+    <div class="axgrid">${keepAx().map(axCard).join("")}</div>
+  </div></div>
   <div class="grid">
     <div class="panel">
       <div class="ptitle">${tr("Money to recover", "Plata por recuperar")} <span class="hint">${tr("a payment link away", "a un link de pago de distancia")}</span></div>
