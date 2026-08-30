@@ -1701,10 +1701,10 @@ input.ck { width: 15px; height: 15px; accent-color: var(--foreground); cursor: p
 .mchl span { display: block; font-size: 12.5px; color: var(--muted-foreground); margin-top: 3px; }
 .mchr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .mchr .btngrp .btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); border-left: 1px solid var(--input); }
-.mdows { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--border); }
+.mcal .mdows { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--border); }
 .mdows div { padding: 8px 10px; font-size: 12px; font-weight: 500; color: var(--muted-foreground); text-align: center; border-right: 1px solid color-mix(in oklab, var(--border) 55%, transparent); }
 .mdows div:last-child { border-right: 0; }
-.mgrid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.mcal .mgrid { display: grid; grid-template-columns: repeat(7, 1fr); }
 .mcell { min-height: 118px; padding: 6px 8px; border-right: 1px solid color-mix(in oklab, var(--border) 55%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent); }
 .mgrid .mcell:nth-child(7n) { border-right: 0; }
 .mcell.off { background: color-mix(in oklab, var(--muted) 25%, transparent); }
@@ -1971,3 +1971,96 @@ html:not(.dark) .side-made img.mk-light { display: inline-block; }
 @keyframes opsbreathe { 0%, 100% { opacity: .65; letter-spacing: .2em; } 50% { opacity: 1; letter-spacing: .3em; } }
 @media (prefers-reduced-motion: reduce) { .ops.opsanim { animation: none; } .side-live b { transition: none; opacity: 1; } }
 .side-made img { height: 26px !important; }
+
+/* ================= móvil 100% (auditoría de agentes, pase 1: core) ================= */
+@media (max-width: 960px) {
+  /* la banda horizontal del sidebar: fuera todo lo que no es nav para que la nav lidere */
+  .side-status, .livesim, .langrow, .side-live, .side-made, .side-user { display: none !important; }
+  /* calendario: mes desplazable manteniendo header y cuerpo alineados */
+  .mcal { overflow-x: auto; }
+  .mdows, .mgrid { min-width: 900px; }
+  /* classes: los tracks 1fr no pueden encoger bajo min-content — minmax(0,1fr) sí */
+  .acgrid, .acgrid2, .stgrid, .crmrow2, .ccbody, .kpigrid, .axgrid { grid-template-columns: minmax(0, 1fr); }
+  .gchart { overflow-x: auto; }
+}
+@media (max-width: 640px) {
+  .crumb { white-space: nowrap; }
+  .crumb > span:first-child { display: none; }
+  .topsearch .kbd { display: none; }
+  .drow .dbody { min-width: 0; overflow-wrap: anywhere; }
+  .hmgrid { min-width: 560px; }
+  .hmhour { font-size: 11px; }
+  .ast b, .ast span { white-space: normal; }
+  .csmini { grid-template-columns: repeat(2, 1fr); }
+  .phav { font-size: 9.5px; }
+  .chip { font-size: 10px; }
+  .actlegs .actleg, .cflowx span { white-space: nowrap; font-size: 10.5px; }
+  /* gutters de 32px → 14px: más ancho útil en teléfono */
+  #content > .crmhead, #content > .kpigrid, #content > .crmcard, #content > .crmrow2,
+  #content > .kbbar, #content > .kanban2, #content > .tabs, #content > .pfgrid,
+  #content > .acthdr, #content > .acgrid, #content > .acgrid2, #content > .mcal,
+  #content > .repnote, #content > .astiles, #content > .stgrid { margin-left: 14px; margin-right: 14px; }
+  .topbar { padding: 16px 14px 14px; }
+  .hero { margin: 12px 14px 0 !important; }
+  .secdesc { padding: 10px 14px 0; }
+  .metrics, .grid, .surfaces { padding-left: 14px; padding-right: 14px; }
+  .demo-note { margin: 24px 14px 0; }
+}
+
+/* ================= móvil pase 2 (agente C): estilos inline, min-width, tabs ================= */
+.grid > *, .acgrid > *, .acgrid2 > *, .crmrow2 > *, .stgrid > *, .ccbody > *, .pfgrid > * { min-width: 0; }
+.tabs { max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+.mcal .mdows, .mcal .mgrid { min-width: 0; }
+@media (max-width: 960px) {
+  .mcal .mdows, .mcal .mgrid { min-width: 900px; }
+  /* estilos inline de app.js no pueden ganar en teléfono */
+  .acgrid[style] { grid-template-columns: minmax(0, 1fr) !important; }
+}
+@media (max-width: 640px) {
+  .mgrid[style], .astiles[style], .kanban[style] { grid-template-columns: 1fr !important; }
+  .mgrid { grid-template-columns: 1fr 1fr; }
+  .dist .drow[style] { grid-template-columns: 1fr !important; }
+  .stcells { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .lgrem input[type=checkbox] { width: 16px; height: 16px; }
+}
+@media (max-width: 480px) {
+  .crgrid { grid-template-columns: 1fr; }
+  .pfwdgrid { grid-template-columns: 1fr; }
+  .stcells { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ================= móvil pase 3 (agente B): Grow/Keep/board/inbox ================= */
+.farr svg { width: 22px; height: 22px; }
+.toast { width: min(340px, calc(100vw - 32px)); }
+.kanban2 { scroll-snap-type: x mandatory; }
+.kbcol { scroll-snap-align: start; }
+.ibpres { overflow: visible; }
+html.animoff *, html.animoff *::before, html.animoff *::after { animation: none !important; transition: none !important; }
+@media (max-width: 960px) {
+  .grid, .grid.split, .grid.half { grid-template-columns: minmax(0, 1fr); }
+  .panel { min-width: 0; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; }
+}
+@media (max-width: 640px) {
+  .ptitle { flex-wrap: wrap; }
+  .ptitle .chip, .ptitle .hint { white-space: normal; }
+  .cchead { flex-wrap: wrap; }
+  .wordmark .ops { display: none; }
+  .drow .dbody { flex-basis: 100%; }
+  .cflowx span:not(:nth-child(3n+1)) { visibility: hidden; }
+  .tablewrap, .hmwrap { -webkit-mask-image: linear-gradient(90deg, #000 93%, transparent); mask-image: linear-gradient(90deg, #000 93%, transparent); }
+  .crmrow2 .crmcard { overflow-x: auto; }
+  .tlticks, .tlarea { min-width: 470px; }
+  .ibleft { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .ibleft .ibsec, .ibleft .iblt { width: 100%; }
+  .ibleft .ibch { border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px; width: auto; }
+  .ibleft .ibnote { display: none; }
+}
+/* iconos de canal en el inbox */
+.ibcn { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.ibch { cursor: pointer; }
+.ibch svg { width: 13px; height: 13px; color: var(--muted-foreground); flex: none; }
+.ibch.on svg { color: var(--foreground); }
+.ibcico { display: inline-flex; margin-right: 4px; }
+.ibcico svg { width: 11px; height: 11px; }
+.ibchip { display: inline-flex; align-items: center; }

@@ -1045,14 +1045,25 @@ function hourDetail(d, i) {
   const box = document.getElementById("hourpanel");
   if (!box) return;
   const marks = (H.classes || []).filter(c => c.d === d && c.h === h);
-  const w = { 1: 40, 2: 15, 3: 30, 4: 15 };
+  /* Coherencia: la gente presente = flujo de puerta (con permanencia ~1.6h)
+     + LOS RESERVADOS de las clases corriendo a esa hora. Así una celda roja
+     (tarde con Zumba a 38/40) muestra el estudio a tope, y una verde de la
+     mañana muestra pisos con espacio. */
+  const clsAdd = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  marks.forEach(m => {
+    const g = ((DATA.classes || {}).grid || []).find(x => x.cls === m.name);
+    const li = ((DATA.classes || {}).list || []).find(x => x.name === m.name);
+    const booked = g && g.slots ? (g.slots[Math.min(d, 5)] || 0) : Math.round((li ? li.cap : 20) * 0.7);
+    clsAdd[CLASS_FLOOR[m.name] || 2] += booked;
+  });
+  const flow = Math.round(total * 1.6);
+  const w = { 1: 40, 2: 12, 3: 33, 4: 15 };
   if (h <= 9) w[4] += 8;
-  if (h >= 17) { w[2] += 4; w[3] += 5; }
-  marks.forEach(m => { w[CLASS_FLOOR[m.name] || 2] += 16; });
+  if (h >= 17) w[3] += 6;
   const sumW = w[1] + w[2] + w[3] + w[4];
   const counts = {}; let acc = 0;
-  [1, 2, 3, 4].forEach(f => { counts[f] = Math.round(total * w[f] / sumW); acc += counts[f]; });
-  counts[1] += total - acc;
+  [1, 2, 3, 4].forEach(f => { counts[f] = Math.round(flow * w[f] / sumW) + clsAdd[f]; acc += counts[f]; });
+  const shown = acc;
   const fname = {};
   (DATA.today.byFloor || []).forEach(f => { fname[f.floor] = f.name; });
   const CAPS = { 1: 40, 2: 35, 3: 45, 4: 25 };   // aforo por piso (SAMPLE)
@@ -1077,8 +1088,8 @@ function hourDetail(d, i) {
     </div>`;
   }).join("");
   box.innerHTML = `
-    <div class="bldhead"><b>${esc(hlabel)}</b> · ${total} ${tr("people across 4 floors on an average week", "personas en 4 pisos en una semana promedio")}
-      ${total === 0 ? `<span class="hint">${tr("the gym is closed or empty at this hour", "el gimnasio está cerrado o vacío a esta hora")}</span>` : ""}</div>
+    <div class="bldhead"><b>${esc(hlabel)}</b> · ${shown} ${tr("people in the building on an average week", "personas en el edificio en una semana promedio")}${marks.length ? ` · ${marks.length} ${tr(marks.length === 1 ? "class running" : "classes running", marks.length === 1 ? "clase corriendo" : "clases corriendo")}` : ""}
+      ${shown === 0 ? `<span class="hint">${tr("the gym is closed or empty at this hour", "el gimnasio está cerrado o vacío a esta hora")}</span>` : ""}</div>
     <div class="bld">${floors}</div>
     <div class="bldfoot">${tr("Split modeled from door weights and the class schedule (SAMPLE); with BioStar live, every badge carries its exact door.", "Distribución modelada con pesos de puerta y el horario de clases (SAMPLE); con BioStar en vivo, cada entrada trae su puerta exacta.")}</div>`;
 }
@@ -1091,7 +1102,18 @@ function mountHourDetail() {
 
 /* Inbox unificado (Studio Chat del template, adaptado a City Zero) */
 let IB_TAB = "all";
+let IB_F = { kind: "folder", val: "inbox" };
 function ibTab(t) { IB_TAB = t; render(); }
+function ibSel(kind, val) { IB_F = { kind, val }; IB_TAB = "all"; render(); }
+/* iconos de canal (glyphs inline, 13px) */
+const IB_ICO = {
+  WhatsApp: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.3A10 10 0 1 0 12 2zm5.1 13.6c-.2.6-1.2 1.1-1.7 1.2-.4.1-1 .1-1.6-.1-2.5-.8-4.6-2.7-5.9-4.9-.5-.9-.9-1.9-.9-2.9 0-.9.5-1.7 1-2 .2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.6c-.1.2-.3.4-.1.7.5.9 1.2 1.7 2.1 2.3.3.2.5.3.7.1l.7-.7c.2-.2.4-.3.7-.2l1.9.9c.3.1.5.2.6.4.1.3 0 .8-.1 1z"/></svg>`,
+  Instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/></svg>`,
+  Email: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-10 6L2 7"/></svg>`,
+  Facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 8.5h3V5h-3a4.5 4.5 0 0 0-4.5 4.5V12H7v3.5h2.5V22h3.5v-6.5h2.6l.5-3.5H13V9.5c0-.6.4-1 1-1z"/></svg>`,
+  "Web chat": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+  Phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+};
 function ibFilter() {
   const q = (document.getElementById("ibq") ? document.getElementById("ibq").value : "").toLowerCase();
   document.querySelectorAll(".ibrow").forEach(el => {
@@ -1114,9 +1136,11 @@ function ibAI(id) {
 function vInbox(selId) {
   const ib = DATA.inbox;
   const META = {
-    c1: { status: "open", tag: tr("Tours", "Tours") }, c2: { status: "open", tag: tr("Tours", "Tours"), unassigned: true },
-    c3: { status: "open", tag: tr("Billing", "Cobros"), vip: true }, c4: { status: "snoozed", tag: null },
-    c5: { status: "closed", tag: tr("Billing", "Cobros") },
+    c1: { status: "open", tag: tr("Tours", "Tours"), tagKey: "tours" },
+    c2: { status: "open", tag: tr("Tours", "Tours"), tagKey: "tours", unassigned: true, mention: true },
+    c3: { status: "open", tag: tr("Billing", "Cobros"), tagKey: "billing", vip: true },
+    c4: { status: "snoozed", tag: null },
+    c5: { status: "closed", tag: tr("Billing", "Cobros"), tagKey: "billing" },
   };
   ib.convos.forEach(c => Object.assign(c, META[c.id] || { status: "open" }));
   const REACTS = { c1: { 2: "👍" }, c3: { 1: "🙏" } };
@@ -1125,25 +1149,42 @@ function vInbox(selId) {
   const nOpen = ib.convos.filter(c => c.status === "open").length;
   const nSnz = ib.convos.filter(c => c.status === "snoozed").length;
   const nCls = ib.convos.filter(c => c.status === "closed").length;
+  const F = IB_F;
   const folders = [
-    [tr("Inbox", "Bandeja"), unreadTotal, true], [tr("Mentions", "Menciones"), 1], [tr("Snoozed", "Pospuestos"), nSnz],
-    [tr("Sent", "Enviados"), ""], [tr("All conversations", "Todas"), ib.convos.length], [tr("Unassigned", "Sin asignar"), ib.convos.filter(c => c.unassigned).length],
-  ].map(f => `<div class="ibch ${f[2] ? "on" : ""}" onclick="toast('${f[0]}', tr('SAMPLE folder: ships with the live inbox', 'Carpeta SAMPLE: llega con la bandeja real'))"><span>${f[0]}</span><b class="mono">${f[1]}</b></div>`).join("");
+    ["inbox", tr("Inbox", "Bandeja"), unreadTotal],
+    ["mentions", tr("Mentions", "Menciones"), ib.convos.filter(c => c.mention).length],
+    ["snoozed", tr("Snoozed", "Pospuestos"), nSnz],
+    ["sent", tr("Sent", "Enviados"), ""],
+    ["all", tr("All conversations", "Todas"), ib.convos.length],
+    ["unassigned", tr("Unassigned", "Sin asignar"), ib.convos.filter(c => c.unassigned).length],
+  ].map(([k, l, n]) => `<div class="ibch ${F.kind === "folder" && F.val === k ? "on" : ""}" onclick="ibSel('folder','${k}')"><span>${l}</span><b class="mono">${n}</b></div>`).join("");
   const chans = ib.channels.map(([n, c]) => `
-    <div class="ibch"><span>${esc(n)}</span><b class="mono">${c || ""}</b></div>`).join("");
+    <div class="ibch ${F.kind === "chan" && F.val === n ? "on" : ""}" onclick="ibSel('chan','${esc(n)}')"><span class="ibcn">${IB_ICO[n] || ""}${esc(n)}</span><b class="mono">${c || ""}</b></div>`).join("");
   const views = [
-    [tr("VIP members", "Miembros VIP"), ib.convos.filter(c => c.vip).length],
-    [tr("Billing issues", "Temas de cobro"), 2],
-    [tr("Tour requests", "Pedidos de tour"), 2],
-  ].map(v => `<div class="ibch" onclick="toast('${v[0]}', tr('SAMPLE view: saved filters ship with the live inbox', 'Vista SAMPLE: los filtros guardados llegan con la bandeja real'))"><span>${v[0]}</span><b class="mono">${v[1]}</b></div>`).join("");
-  const tabbed = ib.convos.filter(c => IB_TAB === "all" || c.status === IB_TAB);
+    ["vip", tr("VIP members", "Miembros VIP"), ib.convos.filter(c => c.vip).length],
+    ["billing", tr("Billing issues", "Temas de cobro"), ib.convos.filter(c => c.tagKey === "billing").length],
+    ["tours", tr("Tour requests", "Pedidos de tour"), ib.convos.filter(c => c.tagKey === "tours").length],
+  ].map(([k, l, n]) => `<div class="ibch ${F.kind === "view" && F.val === k ? "on" : ""}" onclick="ibSel('view','${k}')"><span>${l}</span><b class="mono">${n}</b></div>`).join("");
+  const base = ib.convos.filter(c => {
+    if (F.kind === "chan") return c.ch === F.val;
+    if (F.kind === "view") return F.val === "vip" ? !!c.vip : c.tagKey === F.val;
+    switch (F.val) {
+      case "all": return true;
+      case "mentions": return !!c.mention;
+      case "snoozed": return c.status === "snoozed";
+      case "unassigned": return !!c.unassigned;
+      case "sent": return false;
+      default: return c.status !== "closed";
+    }
+  });
+  const tabbed = base.filter(c => IB_TAB === "all" || c.status === IB_TAB);
   const rows = (pin) => tabbed.filter(c => c.pin === pin).map(c => `
     <div class="ibrow ${c.id === sel.id ? "sel" : ""}" data-q="${esc((c.name + " " + c.prev + " " + c.ch).toLowerCase())}" onclick="location.hash='inbox/${c.id}'">
       ${favatar(c.name, 32)}
       <div class="ibmid">
         <div class="ibtop"><b>${esc(c.name)}</b><span class="mono">${esc(c.when)}</span></div>
         <div class="ibprev">${esc(c.prev)}</div>
-        <div class="ibchips"><span class="ibchip">${esc(c.ch)}</span>${c.tag ? `<span class="ibchip t2">${c.tag}</span>` : ""}${c.unassigned ? `<span class="ibchip t3">${tr("Unassigned", "Sin asignar")}</span>` : ""}</div>
+        <div class="ibchips"><span class="ibchip">${IB_ICO[c.ch] ? `<i class="ibcico">${IB_ICO[c.ch]}</i>` : ""}${esc(c.ch)}</span>${c.tag ? `<span class="ibchip t2">${c.tag}</span>` : ""}${c.unassigned ? `<span class="ibchip t3">${tr("Unassigned", "Sin asignar")}</span>` : ""}</div>
       </div>
       ${c.unread ? `<span class="n hot ibun">${c.unread}</span>` : ""}
     </div>`).join("");

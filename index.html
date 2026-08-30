@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=0830g">
+<link rel="stylesheet" href="styles.css?v=0830h">
 </head>
 <body>
 <div class="shell">
@@ -85,17 +85,18 @@
   </div>
 
 </div>
-<script src="data.js?v=0830g"></script>
-<script src="i18n.js?v=0830g"></script>
+<script src="data.js?v=0830h"></script>
+<script src="i18n.js?v=0830h"></script>
 <script src="vendor/anime.min.js"></script>
-<script src="charts.js?v=0830g"></script>
-<script src="animations.js?v=0830g"></script>
-<script src="components.js?v=0830g"></script>
-<script src="app.js?v=0830g"></script>
-<script src="live.js?v=0830g"></script>
+<script src="charts.js?v=0830h"></script>
+<script src="animations.js?v=0830h"></script>
+<script src="components.js?v=0830h"></script>
+<script src="app.js?v=0830h"></script>
+<script src="live.js?v=0830h"></script>
 <script>
-/* QA: ?rail=1 abre con el sidebar colapsado a iconos */
+/* QA: ?rail=1 abre con el sidebar colapsado a iconos; ?anim=off apaga TAMBIÉN los keyframes CSS */
 if (location.search.includes("rail=1")) document.querySelector(".shell").classList.add("collapsed");
+if (location.search.includes("anim=off")) document.documentElement.classList.add("animoff");
 /* debug hook: ?debug=1 lists elements wider than the viewport in a DOM node */
 if (location.search.includes("debug=1")) {
   setTimeout(() => {
