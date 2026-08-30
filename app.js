@@ -299,6 +299,28 @@ function tickClock() {
 }
 setInterval(tickClock, 1000);
 
+/* Mini banner vivo bajo el logo: rota datos reales del mundo cada 3.5s */
+let _slIdx = 0;
+function sideLiveTick() {
+  const el = document.getElementById("side-live-txt");
+  if (!el || !window.DATA) return;
+  const t = DATA.today || {};
+  const facts = [
+    `${t.inNow || 24} ${tr("in the gym now", "en el gym ahora")}`,
+    `${(DATA.grow || {}).members || 214} ${tr("active members", "miembros activos")}`,
+    tr("Zumba 7 PM · 38/40 booked", "Zumba 7 PM · 38/40 reservados"),
+    `${t.todayTotal || 63} ${tr("check-ins today", "check-ins hoy")}`,
+    tr("3 tours to confirm", "3 tours por confirmar"),
+  ];
+  if (_slIdx === 0) { el.textContent = facts[0]; el.classList.add("in"); _slIdx = 1; return; }
+  el.classList.remove("in");
+  setTimeout(() => { el.textContent = facts[_slIdx % facts.length]; el.classList.add("in"); _slIdx++; }, 180);
+}
+if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+  setInterval(sideLiveTick, 3500);
+}
+setTimeout(sideLiveTick, 300);
+
 function fmtDate(iso) {
   const d = new Date(iso + "T12:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -1068,55 +1090,120 @@ function mountHourDetail() {
 }
 
 /* Inbox unificado (Studio Chat del template, adaptado a City Zero) */
+let IB_TAB = "all";
+function ibTab(t) { IB_TAB = t; render(); }
+function ibFilter() {
+  const q = (document.getElementById("ibq") ? document.getElementById("ibq").value : "").toLowerCase();
+  document.querySelectorAll(".ibrow").forEach(el => {
+    el.style.display = !q || (el.getAttribute("data-q") || "").indexOf(q) >= 0 ? "" : "none";
+  });
+}
+function ibAI(id) {
+  const c = DATA.inbox.convos.find(x => x.id === id);
+  const d = document.getElementById("ib-draft");
+  if (!c || !d) return;
+  const drafts = {
+    c1: tr("See you Saturday 10 AM, Melissa! Andreina will be waiting at the front desk. Want me to add a friend pass for your first visit?", "¡Nos vemos el sábado 10 AM, Melissa! Andreina te espera en recepción. ¿Te agrego un pase de acompañante para tu primera visita?"),
+    c2: tr("Hey Dana! Monthly starts at $129.99 and your first class is on us. Want to book a free trial this week?", "¡Hola Dana! El mensual arranca en $129.99 y la primera clase va por nosotros. ¿Te agendo un trial gratis esta semana?"),
+    c3: tr("You're right, Jorge — I can see the duplicate charge on the 3rd. Refund is on its way today; you'll get the receipt by email.", "Tienes razón, Jorge: veo el cobro duplicado del día 3. El reembolso sale hoy; te llega el comprobante por correo."),
+  };
+  d.value = drafts[id] || tr("Thanks for reaching out! Let me check that for you right away.", "¡Gracias por escribir! Déjame revisarlo ahora mismo.");
+  toast(tr("Pulse drafted a reply", "Pulse redactó una respuesta"), tr("Edit and send; nothing goes out on its own.", "Edita y envía; nada sale solo."));
+}
+
 function vInbox(selId) {
   const ib = DATA.inbox;
+  const META = {
+    c1: { status: "open", tag: tr("Tours", "Tours") }, c2: { status: "open", tag: tr("Tours", "Tours"), unassigned: true },
+    c3: { status: "open", tag: tr("Billing", "Cobros"), vip: true }, c4: { status: "snoozed", tag: null },
+    c5: { status: "closed", tag: tr("Billing", "Cobros") },
+  };
+  ib.convos.forEach(c => Object.assign(c, META[c.id] || { status: "open" }));
+  const REACTS = { c1: { 2: "👍" }, c3: { 1: "🙏" } };
   const sel = ib.convos.find(c => c.id === selId) || ib.convos[0];
   const unreadTotal = ib.convos.reduce((a, c) => a + c.unread, 0);
-  const chIcon = { WhatsApp: "wa", Instagram: "ig", Email: "mail", Facebook: "fb", "Web chat": "chat", Phone: "ph" };
+  const nOpen = ib.convos.filter(c => c.status === "open").length;
+  const nSnz = ib.convos.filter(c => c.status === "snoozed").length;
+  const nCls = ib.convos.filter(c => c.status === "closed").length;
+  const folders = [
+    [tr("Inbox", "Bandeja"), unreadTotal, true], [tr("Mentions", "Menciones"), 1], [tr("Snoozed", "Pospuestos"), nSnz],
+    [tr("Sent", "Enviados"), ""], [tr("All conversations", "Todas"), ib.convos.length], [tr("Unassigned", "Sin asignar"), ib.convos.filter(c => c.unassigned).length],
+  ].map(f => `<div class="ibch ${f[2] ? "on" : ""}" onclick="toast('${f[0]}', tr('SAMPLE folder: ships with the live inbox', 'Carpeta SAMPLE: llega con la bandeja real'))"><span>${f[0]}</span><b class="mono">${f[1]}</b></div>`).join("");
   const chans = ib.channels.map(([n, c]) => `
     <div class="ibch"><span>${esc(n)}</span><b class="mono">${c || ""}</b></div>`).join("");
-  const rows = (pin) => ib.convos.filter(c => c.pin === pin).map(c => `
-    <div class="ibrow ${c.id === sel.id ? "sel" : ""}" onclick="location.hash='inbox/${c.id}'">
+  const views = [
+    [tr("VIP members", "Miembros VIP"), ib.convos.filter(c => c.vip).length],
+    [tr("Billing issues", "Temas de cobro"), 2],
+    [tr("Tour requests", "Pedidos de tour"), 2],
+  ].map(v => `<div class="ibch" onclick="toast('${v[0]}', tr('SAMPLE view: saved filters ship with the live inbox', 'Vista SAMPLE: los filtros guardados llegan con la bandeja real'))"><span>${v[0]}</span><b class="mono">${v[1]}</b></div>`).join("");
+  const tabbed = ib.convos.filter(c => IB_TAB === "all" || c.status === IB_TAB);
+  const rows = (pin) => tabbed.filter(c => c.pin === pin).map(c => `
+    <div class="ibrow ${c.id === sel.id ? "sel" : ""}" data-q="${esc((c.name + " " + c.prev + " " + c.ch).toLowerCase())}" onclick="location.hash='inbox/${c.id}'">
       ${favatar(c.name, 32)}
       <div class="ibmid">
         <div class="ibtop"><b>${esc(c.name)}</b><span class="mono">${esc(c.when)}</span></div>
         <div class="ibprev">${esc(c.prev)}</div>
-        <div class="ibchip">${esc(c.ch)}</div>
+        <div class="ibchips"><span class="ibchip">${esc(c.ch)}</span>${c.tag ? `<span class="ibchip t2">${c.tag}</span>` : ""}${c.unassigned ? `<span class="ibchip t3">${tr("Unassigned", "Sin asignar")}</span>` : ""}</div>
       </div>
       ${c.unread ? `<span class="n hot ibun">${c.unread}</span>` : ""}
     </div>`).join("");
-  const msgs = sel.thread.map(m => m.who === "them" ? `
-    <div class="msg them">${favatar(sel.name, 26)}<div class="mb"><p>${esc(m.txt)}</p><span class="mt mono">${esc(m.t)}</span></div></div>` : `
-    <div class="msg us"><div class="mb"><p>${esc(m.txt)}</p><span class="mt mono">${esc(m.t)}</span></div><span class="favatar" style="width:26px;height:26px"><i>CZ</i></span></div>`).join("");
+  const msgs = sel.thread.map((m, i) => {
+    const rx = (REACTS[sel.id] || {})[i];
+    const react = rx ? `<span class="mreact">${rx}</span>` : "";
+    return m.who === "them" ? `
+    <div class="msg them">${favatar(sel.name, 26)}<div class="mb"><p>${esc(m.txt)}</p>${react}<span class="mt mono">${esc(m.t)}</span></div></div>` : `
+    <div class="msg us"><div class="mb"><p>${esc(m.txt)}</p>${react}<span class="mt mono">${esc(m.t)}</span></div><span class="favatar" style="width:26px;height:26px"><i>CZ</i></span></div>`;
+  }).join("");
+  const hdrIco = (svg, tip) => `<button class="kbicon" data-tip="${tip}" onclick="toast('${tip}', tr('SAMPLE: ships with the live inbox', 'SAMPLE: llega con la bandeja real'))">${svg}</button>`;
+  const icoPh = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+  const icoTag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>`;
+  const icoBell = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
   return `
   ${topbar("Inbox", tr("EVERY CHANNEL A LEAD CAN ARRIVE THROUGH, ONE SCREEN, ONE REPLY BOX.", "TODOS LOS CANALES POR DONDE LLEGA UN LEAD, UNA PANTALLA, UNA CAJA DE RESPUESTA."), p2chip())}
   <div class="grid"><div class="panel wide ibwrap">
     <div class="ibgrid">
       <aside class="ibleft">
         <div class="iblt">${tr("Inbox", "Bandeja")}<b class="mono">${unreadTotal}</b></div>
+        ${folders}
         <div class="ibsec">${tr("Channels", "Canales")}</div>
         ${chans}
+        <div class="ibsec">${tr("Views", "Vistas")}</div>
+        ${views}
         <div class="ibnote">${esc(ib.note)}</div>
       </aside>
       <div class="iblist">
+        <div class="ibsearch kbsearch" style="margin:2px 0 10px;display:flex">${KB_I.search}<input id="ibq" type="search" style="width:100%" placeholder="${tr("Search conversations...", "Buscar conversaciones...")}" oninput="ibFilter()"></div>
+        <div class="ibtabbar">
+          ${[["all", tr("All", "Todas"), ib.convos.length], ["open", tr("Open", "Abiertas"), nOpen], ["snoozed", tr("Snoozed", "Pospuestas"), nSnz], ["closed", tr("Closed", "Cerradas"), nCls]]
+      .map(([k, l, n]) => `<button class="ibtb${IB_TAB === k ? " on" : ""}" onclick="ibTab('${k}')">${l} <span class="mono">(${n})</span></button>`).join("")}
+        </div>
         <div class="ibsec">${tr("Pinned", "Fijados")}</div>
-        ${rows(true)}
+        ${rows(true) || `<div class="ibempty">${tr("Nothing pinned here", "Nada fijado aquí")}</div>`}
         <div class="ibsec">${tr("Today", "Hoy")}</div>
-        ${rows(false)}
+        ${rows(false) || `<div class="ibempty">${tr("No conversations in this tab", "Sin conversaciones en esta pestaña")}</div>`}
       </div>
       <div class="ibthread">
         <div class="ibhead">
-          ${favatar(sel.name, 34)}
+          <span class="ibpres">${favatar(sel.name, 34)}<i></i></span>
           <div><b>${esc(sel.name)}</b><span>${esc(sel.role)} · ${esc(sel.ch)}</span></div>
-          <span class="chip gray" style="margin-left:auto">SAMPLE</span>
+          <span class="ibhacts">
+            ${hdrIco(icoPh, tr("Call", "Llamar"))}${hdrIco(icoTag, tr("Tag", "Etiquetar"))}${hdrIco(icoBell, tr("Snooze", "Posponer"))}
+            <span class="chip gray">SAMPLE</span>
+          </span>
         </div>
         <div class="ibmsgs">${msgs}</div>
         <div class="ibcomposer">
-          <div class="ibtabs"><b>${tr("Reply", "Responder")}</b><span>${tr("Internal note", "Nota interna")}</span></div>
+          <div class="ibtabs"><b>${tr("Reply", "Responder")}</b><span onclick="toast(tr('Internal note', 'Nota interna'), tr('SAMPLE: notes stay team-only in the live inbox', 'SAMPLE: las notas quedan solo para el equipo en la bandeja real'))">${tr("Internal note", "Nota interna")}</span></div>
           <textarea class="input" id="ib-draft" rows="2" placeholder="${tr("Type your message...", "Escribe tu mensaje...")}"></textarea>
           <div class="ibtools">
-            <span class="hint">${tr("Sends from City Zero's own account", "Sale de la cuenta propia de City Zero")} · ${esc(sel.ch)}</span>
-            <button class="btn" onclick="ibSend('${sel.id}')">${tr("Send", "Enviar")}</button>
+            <span class="ibtico">
+              <button class="kbicon" data-tip="${tr("Formatting", "Formato")}" onclick="toast('Aa', tr('SAMPLE: rich text ships with the live inbox', 'SAMPLE: el formato llega con la bandeja real'))"><b style="font-size:13px">T</b></button>
+              <button class="kbicon" data-tip="Emoji" onclick="toast('Emoji', tr('SAMPLE', 'SAMPLE'))">🙂</button>
+              <button class="kbicon" data-tip="${tr("Attach", "Adjuntar")}" onclick="toast('${tr("Attach", "Adjuntar")}', tr('SAMPLE', 'SAMPLE'))">${KB_I.clip.replace("<svg", "<svg style='width:14px;height:14px'")}</button>
+              <button class="kbicon" data-tip="${tr("Pulse drafts a reply", "Pulse redacta una respuesta")}" onclick="ibAI('${sel.id}')">✨</button>
+            </span>
+            <span class="hint" style="margin-left:auto">${tr("Sends from City Zero's own account", "Sale de la cuenta propia de City Zero")} · ${esc(sel.ch)}</span>
+            <button class="btn solid sm sq" style="border-radius:999px;width:36px;height:36px" data-tip="${tr("Send", "Enviar")}" onclick="ibSend('${sel.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg></button>
           </div>
         </div>
       </div>
