@@ -299,6 +299,19 @@ function tickClock() {
 }
 setInterval(tickClock, 1000);
 
+/* Bottom nav móvil (patrón 4thman): tabs fijos abajo + "More" → command palette */
+function mobNav(id) {
+  let el = document.getElementById("mobnav");
+  if (!el) { el = document.createElement("nav"); el.id = "mobnav"; document.body.appendChild(el); }
+  const items = [
+    ["home", tr("Home", "Inicio")], ["calendar", tr("Calendar", "Calendario")],
+    ["pipeline", "Pipeline"], ["inbox", tr("Inbox", "Bandeja")],
+  ];
+  el.innerHTML = items.map(([k, l]) =>
+    `<a href="#${k}" class="${id === k ? "on" : ""}">${NAV_ICONS[k] || NAV_ICONS._}<span>${l}</span></a>`).join("") +
+    `<a href="#" onclick="event.preventDefault();openCmdk()">${KB_I.grid}<span>${tr("More", "Más")}</span></a>`;
+}
+
 /* Mini banner vivo bajo el logo: rota datos reales del mundo cada 3.5s */
 let _slIdx = 0;
 function sideLiveTick() {
@@ -4030,6 +4043,7 @@ function render() {
   CUR_ID = id;
   $("#content").innerHTML = (id === "home" ? "" : heroFor(id)) + view(arg);
   tickClock();
+  mobNav(id);
   const tb = $("#content .topbar");
   if (tb && SECTION_DESC[id] && !SEC_SUB[id]) tb.insertAdjacentHTML("afterend", `<div class="secdesc">${SECTION_DESC[id]}</div>`);
   if (id === "overview" || !VIEWS[id]) mountOverviewCharts();

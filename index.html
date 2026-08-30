@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=0830h">
+<link rel="stylesheet" href="styles.css?v=0830i">
 </head>
 <body>
 <div class="shell">
@@ -64,6 +64,7 @@
         <span class="kbd">Ctrl K</span>
       </button>
       <div class="ahr">
+        <a class="ahbtn" href="landing.html" target="_blank" data-tip="Landing page" aria-label="Landing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
         <button class="ahbtn" onclick="setTheme(THEME === 'dark' ? 'light' : 'dark')" aria-label="Toggle theme" data-tip="Theme">
           <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
           <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"></path></svg>
@@ -85,14 +86,14 @@
   </div>
 
 </div>
-<script src="data.js?v=0830h"></script>
-<script src="i18n.js?v=0830h"></script>
+<script src="data.js?v=0830i"></script>
+<script src="i18n.js?v=0830i"></script>
 <script src="vendor/anime.min.js"></script>
-<script src="charts.js?v=0830h"></script>
-<script src="animations.js?v=0830h"></script>
-<script src="components.js?v=0830h"></script>
-<script src="app.js?v=0830h"></script>
-<script src="live.js?v=0830h"></script>
+<script src="charts.js?v=0830i"></script>
+<script src="animations.js?v=0830i"></script>
+<script src="components.js?v=0830i"></script>
+<script src="app.js?v=0830i"></script>
+<script src="live.js?v=0830i"></script>
 <script>
 /* QA: ?rail=1 abre con el sidebar colapsado a iconos; ?anim=off apaga TAMBIÉN los keyframes CSS */
 if (location.search.includes("rail=1")) document.querySelector(".shell").classList.add("collapsed");

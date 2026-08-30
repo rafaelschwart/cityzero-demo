@@ -2064,3 +2064,14 @@ html.animoff *, html.animoff *::before, html.animoff *::after { animation: none 
 .ibcico { display: inline-flex; margin-right: 4px; }
 .ibcico svg { width: 11px; height: 11px; }
 .ibchip { display: inline-flex; align-items: center; }
+
+/* ================= bottom nav móvil (patrón 4thman) ================= */
+#mobnav { display: none; }
+@media (max-width: 640px) {
+  .sidebar { display: none !important; }
+  .content { padding-bottom: 84px; }
+  #mobnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: grid; grid-template-columns: repeat(5, 1fr); background: color-mix(in oklab, var(--sidebar) 92%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--border); padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); }
+  #mobnav a { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--muted-foreground); font-size: 10px; font-weight: 600; padding: 4px 0; border-radius: 10px; }
+  #mobnav a svg { width: 20px; height: 20px; }
+  #mobnav a.on { color: var(--foreground); background: color-mix(in oklab, var(--accent) 60%, transparent); }
+}
