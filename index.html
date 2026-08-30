@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=0830a">
+<link rel="stylesheet" href="styles.css?v=0830b">
 </head>
 <body>
 <div class="shell">
@@ -16,6 +16,7 @@
   <aside class="sidebar">
     <div class="wordmark">
       <img src="assets/logo-horizontal-white.png" alt="City Zero">
+      <img class="mkmini" src="assets/logo-cz-mark.png" alt="City Zero">
       <span class="ops">OPS</span>
     </div>
     <nav class="nav" id="nav"></nav>
@@ -34,8 +35,8 @@
       <button class="langbtn" data-l="es" onclick="setLang('es')">ES</button>
     </div>
     <div class="side-user" onclick="location.hash='#profile'" data-tip="Account">
-      <span class="avatar sm">RS</span>
-      <div class="sud"><b>City Zero Demo</b><span>citizerodemo@arqentia.com</span></div>
+      <span class="avatar sm avph"><img src="assets/team/ivan.jpg" alt="" onerror="this.remove()">IF</span>
+      <div class="sud"><b>Ivan Flores</b><span>Business Operations Manager</span></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
     </div>
     <div class="side-made">
@@ -56,20 +57,20 @@
           <span>CITY 0 OPS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg><b id="crumb-sec">Today</b>
         </nav>
       </div>
+      <button class="topsearch wide" onclick="openCmdk()" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span class="tslabel">Search the dashboard...</span>
+        <span class="kbd">Ctrl K</span>
+      </button>
       <div class="ahr">
-        <button class="topsearch" onclick="openCmdk()" aria-label="Search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-          <span class="tslabel">Search the dashboard...</span>
-          <span class="kbd">Ctrl K</span>
-        </button>
         <button class="ahbtn" onclick="setTheme(THEME === 'dark' ? 'light' : 'dark')" aria-label="Toggle theme" data-tip="Theme">
           <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
           <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"></path></svg>
         </button>
         <span style="position:relative;display:inline-flex">
-          <span class="avatar sm ahav" style="cursor:pointer" onclick="avToggle(event)">RS</span>
+          <span class="avatar sm ahav avph" style="cursor:pointer" onclick="avToggle(event)"><img src="assets/team/ivan.jpg" alt="" onerror="this.remove()">IF</span>
           <div class="avmenu" id="avmenu" onclick="event.stopPropagation()">
-            <div class="avh"><span class="avatar sm">RS</span><div><b>City Zero Demo</b><span>citizerodemo@arqentia.com</span></div></div>
+            <div class="avh"><span class="avatar sm avph"><img src="assets/team/ivan.jpg" alt="" onerror="this.remove()">IF</span><div><b>Ivan Flores</b><span>citizerodemo@arqentia.com</span></div></div>
             <button onclick="avGo('#profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>Account</button>
             <button onclick="avHide();toast('Billing', tr('SAMPLE: invoices ship with the real build','SAMPLE: las facturas llegan con el build real'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>Billing</button>
             <button onclick="avHide();toast(tr('Notifications','Notificaciones'), tr('SAMPLE: morning email + alerts','SAMPLE: correo matutino + alertas'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Notifications</button>
@@ -83,15 +84,17 @@
   </div>
 
 </div>
-<script src="data.js?v=0830a"></script>
-<script src="i18n.js?v=0830a"></script>
+<script src="data.js?v=0830b"></script>
+<script src="i18n.js?v=0830b"></script>
 <script src="vendor/anime.min.js"></script>
-<script src="charts.js?v=0830a"></script>
-<script src="animations.js?v=0830a"></script>
-<script src="components.js?v=0830a"></script>
-<script src="app.js?v=0830a"></script>
-<script src="live.js?v=0830a"></script>
+<script src="charts.js?v=0830b"></script>
+<script src="animations.js?v=0830b"></script>
+<script src="components.js?v=0830b"></script>
+<script src="app.js?v=0830b"></script>
+<script src="live.js?v=0830b"></script>
 <script>
+/* QA: ?rail=1 abre con el sidebar colapsado a iconos */
+if (location.search.includes("rail=1")) document.querySelector(".shell").classList.add("collapsed");
 /* debug hook: ?debug=1 lists elements wider than the viewport in a DOM node */
 if (location.search.includes("debug=1")) {
   setTimeout(() => {

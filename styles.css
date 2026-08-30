@@ -113,8 +113,17 @@ button { font-family: inherit; }
 
 /* ================= shell & sidebar (next-shadcn-admin template) ================= */
 .shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100dvh; }
-.shell.collapsed { grid-template-columns: 0 1fr; }
-.shell.collapsed .sidebar { display: none; }
+/* colapso a iconos (sidebar collapsible="icon" del template) */
+.shell.collapsed { grid-template-columns: 58px 1fr; }
+.shell.collapsed .sidebar { padding-left: 8px; padding-right: 8px; overflow: visible; }
+.shell.collapsed .wordmark img, .shell.collapsed .wordmark .ops { display: none; }
+.shell.collapsed .wordmark .mkmini { display: block; margin: 0 auto; }
+.shell.collapsed .nav a { justify-content: center; padding-left: 0; padding-right: 0; }
+.shell.collapsed .nav .navlbl, .shell.collapsed .nav .n { display: none; }
+.shell.collapsed .navgroup, .shell.collapsed .side-status, .shell.collapsed .langrow,
+.shell.collapsed .side-made, .shell.collapsed .side-user .sud, .shell.collapsed .side-user > svg { display: none; }
+.shell.collapsed .side-user { justify-content: center; padding: 6px; border: 0; background: transparent; }
+.wordmark .mkmini { display: none; height: 30px; }
 .inset { min-width: 0; display: flex; flex-direction: column; }
 
 /* header h-12 sticky con blur, receta del layout.tsx del template */
@@ -1858,3 +1867,10 @@ html:not(.dark) .herotxt, html:not(.dark) .herotxt .mono, html:not(.dark) .herot
 .side-made img { height: 17px; display: none; opacity: .95; }
 html.dark .side-made img.mk-dark { display: inline-block; }
 html:not(.dark) .side-made img.mk-light { display: inline-block; }
+
+/* search full-width en el header + avatares con foto */
+.apphdr .topsearch.wide { flex: 1; max-width: none; margin: 0 14px; justify-content: flex-start; }
+.topsearch.wide .tslabel { flex: 1; text-align: left; }
+.avatar.avph, .pfava.avph { position: relative; overflow: hidden; }
+.avatar.avph img, .pfava.avph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.shell.collapsed .livesim { display: none; }
