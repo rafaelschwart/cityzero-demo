@@ -252,15 +252,52 @@ function sevChip(x) {
   return `<span class="chip ${x.severity}">OPEN ${d} DAYS</span>`;
 }
 
+/* Una línea corta y precisa por sección (reemplaza el sub en MAYÚSCULAS y el
+   párrafo secdesc duplicado en las pantallas del pitch). */
+let CUR_ID = "home";
+const SEC_SUB = {
+  home: () => tr("The gym live: who is in, what fills tonight, and what to do next.", "El gimnasio en vivo: quién está, qué se llena hoy y qué hacer ahora."),
+  hours: () => tr("When the gym runs full and when it runs empty, hour by hour.", "Cuándo el gimnasio está lleno y cuándo vacío, hora por hora."),
+  calendar: () => tr("Every class of the month, straight from the weekly schedule.", "Cada clase del mes, directo del horario semanal."),
+  classes: () => tr("Fill, waitlists and the slots worth selling, class by class.", "Ocupación, listas de espera y los horarios por vender, clase por clase."),
+  grow: () => tr("The road from 214 to 500 members, with names and next moves.", "El camino de 214 a 500 miembros, con nombres y próximas jugadas."),
+  pipeline: () => tr("Every lead with an owner, a stage and a clock on it.", "Cada lead con un dueño, una etapa y un reloj encima."),
+  campaigns: () => tr("Follow-up sequences that run themselves, from your own accounts.", "Secuencias de seguimiento que corren solas, desde tus propias cuentas."),
+  inbox: () => tr("Every channel, one thread per person.", "Todos los canales, un solo hilo por persona."),
+  keep: () => tr("Failed charges and quiet members, caught before they become cancellations.", "Cobros fallidos y miembros apagándose, atrapados antes de volverse bajas."),
+  paidmedia: () => tr("The live cockpit of paid campaigns: pacing, lead quality and steering.", "La cabina en vivo de las campañas: ritmo, calidad de leads y volante."),
+  pulsereport: () => tr("The monthly document the client receives: the closed month, explained.", "El documento mensual que recibe el cliente: el mes cerrado, explicado."),
+  store: () => tr("Merch, shakes and day passes, measured — a Phase 2 concept.", "Merch, shakes y pases de día, medidos — concepto de Fase 2."),
+  engine: () => tr("Everything running underneath: 15 endpoints, 8 answers, one screen.", "Todo lo que corre debajo: 15 endpoints, 8 respuestas, una pantalla."),
+  profile: () => tr("The demo account: read-only access and what it watches.", "La cuenta demo: acceso de solo lectura y qué observa."),
+};
+
 function topbar(title, sub, actions = "") {
+  const short = SEC_SUB[CUR_ID] ? SEC_SUB[CUR_ID]() : sub;
   return `<div class="topbar">
-    <div><h1>${title}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}</div>
+    <div class="tbl"><h1>${title}</h1>${short ? `<div class="sub">${short}</div>` : ""}</div>
     <div class="sweep">
-      <span class="stamp"><span class="dot"></span>LAST SWEEP ${fmtDate(DATA.meta.sweepDate).toUpperCase()} ${DATA.meta.sweepTime}</span>
-      ${actions}
+      <div class="tclock"><b class="mono" id="tclock"></b><span id="tclockd"></span></div>
+      <span class="tcsep"></span>
+      <div class="tmeta">
+        <span class="stamp"><span class="dot"></span>LAST SWEEP ${fmtDate(DATA.meta.sweepDate).toUpperCase()} ${DATA.meta.sweepTime}</span>
+        ${actions}
+      </div>
     </div>
   </div>`;
 }
+
+/* Reloj en vivo del dashboard (late cada segundo en el topbar) */
+function tickClock() {
+  const t = document.getElementById("tclock");
+  if (!t) return;
+  const now = new Date();
+  const loc = LANG === "es" ? "es" : "en-US";
+  t.textContent = now.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+  const d = document.getElementById("tclockd");
+  if (d) d.textContent = now.toLocaleDateString(loc, { weekday: "long", month: "short", day: "numeric" });
+}
+setInterval(tickClock, 1000);
 
 function fmtDate(iso) {
   const d = new Date(iso + "T12:00:00");
@@ -3862,9 +3899,11 @@ function render() {
   }).join("");
   const cs = document.getElementById("crumb-sec");
   if (cs) cs.textContent = (LANG === "es" && typeof T !== "undefined" && T[SECTIONS.find(s => s.id === id)?.label]) || SECTIONS.find(s => s.id === id)?.label || "Today";
+  CUR_ID = id;
   $("#content").innerHTML = (id === "home" ? "" : heroFor(id)) + view(arg);
+  tickClock();
   const tb = $("#content .topbar");
-  if (tb && SECTION_DESC[id]) tb.insertAdjacentHTML("afterend", `<div class="secdesc">${SECTION_DESC[id]}</div>`);
+  if (tb && SECTION_DESC[id] && !SEC_SUB[id]) tb.insertAdjacentHTML("afterend", `<div class="secdesc">${SECTION_DESC[id]}</div>`);
   if (id === "overview" || !VIEWS[id]) mountOverviewCharts();
   if (id === "reviews") mountReviewDonut();
   const st = document.getElementById("side-status");
