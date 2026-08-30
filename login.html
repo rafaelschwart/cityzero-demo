@@ -6,15 +6,14 @@
 <title>CITY 0 OPS · Login</title>
 <link rel="icon" href="assets/logo-cz-mark.png">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=0829n">
+<link rel="stylesheet" href="styles.css?v=0829o">
 <style>
   .lg { display: grid; grid-template-columns: 1fr 1.2fr; min-height: 100dvh; }
   .lgl { position: relative; overflow: hidden; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
   .lgl .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; filter: saturate(.35) brightness(.85); }
   @media (prefers-reduced-motion: reduce) { .lgl video.bg { display: none; } }
-  .lgl .mark { position: relative; height: 54px; }
-  .lgl h1 { position: relative; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
-  .lgl p { position: relative; font-size: 13.5px; color: rgba(255,255,255,.65); }
+  .lgl .mark { position: relative; height: 128px; }
+  .lgl p { position: relative; font-size: 16px; letter-spacing: .04em; color: rgba(255,255,255,.78); }
   .lgr { background: var(--background); display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
   .lgbox { width: min(360px, 100%); }
   .lgbox h2 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 8px; }
@@ -43,7 +42,6 @@
       <source src="assets/login.mp4" type="video/mp4">
     </video>
     <img class="mark" src="assets/logo-cz-mark.png" alt="City Zero" onerror="this.remove()">
-    <h1>CITY 0 OPS</h1>
     <p>Operational Dashboard</p>
   </div>
   <div class="lgr">
