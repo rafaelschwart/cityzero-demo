@@ -1842,3 +1842,7 @@ html:not(.dark) .donutpanel { box-shadow: var(--shadow-sm); }
 html:not(.dark) .kbtask, html:not(.dark) .mev { box-shadow: var(--shadow-xs); }
 html:not(.dark) .kbtask { background: var(--card); }
 html:not(.dark) .tabs { background: oklch(0.9 0 0); }
+
+/* banners claros: en light el hero lleva velo blanco y texto oscuro */
+html:not(.dark) .heroshade { background: linear-gradient(90deg, rgba(255,255,255,.88), rgba(255,255,255,.35) 45%, rgba(255,255,255,.06)); }
+html:not(.dark) .herotxt, html:not(.dark) .herotxt .mono, html:not(.dark) .herotxt b { color: oklch(0.16 0 0); text-shadow: none; }

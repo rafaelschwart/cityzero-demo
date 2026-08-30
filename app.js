@@ -465,7 +465,7 @@ function vToday() {
   const dateStr = now.toLocaleDateString(LANG === "es" ? "es-US" : "en-US", { weekday: "long", month: "long", day: "numeric" });
   return `
   <div class="hero">
-    <img src="assets/banner.webp" alt="" onerror="this.closest('.hero').remove()">
+    <img src="${typeof THEME !== "undefined" && THEME === "light" ? "assets/banners/light/home.webp" : "assets/banner.webp"}" alt="" onerror="this.closest('.hero').remove()">
     <div class="heroshade"></div>
     <div class="herotxt">
       <span class="mono">CITY ZERO · BRICKELL</span>
@@ -3687,7 +3687,7 @@ function heroFor(id) {
   const label = SECTIONS.find(s => s.id === id)?.label || "";
   return `
   <div class="hero sec">
-    <img src="assets/banners/${id === "calendar" ? "classes" : id}.webp" alt="" onerror="this.closest('.hero').remove()">
+    <img src="assets/banners/${typeof THEME !== "undefined" && THEME === "light" ? "light/" : ""}${id === "calendar" ? "classes" : id}.webp" alt="" onerror="this.closest('.hero').remove()">
     <div class="heroshade"></div>
     <div class="herotxt"><span class="mono">CITY ZERO · ${esc(label.toUpperCase())}</span><b>${tr(h[0], h[1])}</b></div>
   </div>`;
