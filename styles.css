@@ -1846,3 +1846,15 @@ html:not(.dark) .tabs { background: oklch(0.9 0 0); }
 /* banners claros: en light el hero lleva velo blanco y texto oscuro */
 html:not(.dark) .heroshade { background: linear-gradient(90deg, rgba(255,255,255,.88), rgba(255,255,255,.35) 45%, rgba(255,255,255,.06)); }
 html:not(.dark) .herotxt, html:not(.dark) .herotxt .mono, html:not(.dark) .herotxt b { color: oklch(0.16 0 0); text-shadow: none; }
+
+/* pie del sidebar: tarjeta de perfil (template) + Hecho por Arqentia */
+.side-user { display: flex; align-items: center; gap: 9px; padding: 8px 9px; margin: 0 0 6px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: color-mix(in oklab, var(--card) 65%, transparent); cursor: pointer; transition: border-color .15s ease; }
+.side-user:hover { border-color: color-mix(in oklab, var(--foreground) 22%, var(--border)); }
+.side-user .sud { min-width: 0; flex: 1; }
+.side-user .sud b { display: block; font-size: 12px; font-weight: 600; line-height: 1.2; }
+.side-user .sud span { display: block; font-size: 10.5px; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side-user > svg { width: 15px; height: 15px; color: var(--muted-foreground); flex: none; }
+.side-made { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 0 2px; font-size: 10.5px; color: var(--muted-foreground); }
+.side-made img { height: 17px; display: none; opacity: .95; }
+html.dark .side-made img.mk-dark { display: inline-block; }
+html:not(.dark) .side-made img.mk-light { display: inline-block; }

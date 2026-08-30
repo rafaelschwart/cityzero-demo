@@ -200,6 +200,7 @@ const T = {
   // Store + Profile
   "City Zero Store": "Tienda City Zero",
   "Search the dashboard...": "Busca en el dashboard...",
+  "Made by": "Hecho por",
   "Protein shakes · front bar": "Batidos de proteína · barra", "CZ tee + hoodie drop": "Drop de camiseta + hoodie CZ",
   "Day passes": "Pases de día", "Gloves, straps, shakers": "Guantes, straps, shakers",
   "Front desk": "Recepción",
