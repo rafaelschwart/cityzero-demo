@@ -4120,6 +4120,12 @@ document.addEventListener("click", e => {
   document.querySelectorAll(".dd.open").forEach(dd => { if (!dd.contains(e.target)) dd.classList.remove("open"); });
 });
 
-/* charts re-render on resize */
-let _rz;
-window.addEventListener("resize", () => { clearTimeout(_rz); _rz = setTimeout(render, 200); });
+/* charts re-render on resize — SOLO si cambió el ancho: en móvil el scroll
+   colapsa la barra de URL y dispara resize de alto, y re-renderizar ahí
+   resetea el scroll (el "brinco hacia arriba"). */
+let _rz, _rzw = window.innerWidth;
+window.addEventListener("resize", () => {
+  if (window.innerWidth === _rzw) return;
+  _rzw = window.innerWidth;
+  clearTimeout(_rz); _rz = setTimeout(render, 200);
+});
