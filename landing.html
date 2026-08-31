@@ -285,8 +285,13 @@ function captureLead(e) {
 <script src="vendor/anime.min.js"></script>
 <script>
 (function () {
-  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof anime === "undefined") return;
+  var off = location.search.indexOf("anim=off") >= 0
+    || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)
+    || typeof anime === "undefined";
+  if (off) return;
+  setTimeout(function () {  // red de seguridad: nada se queda invisible
+    document.querySelectorAll('[style*="opacity: 0"], [style*="opacity:0"]').forEach(function (el) { el.style.opacity = 1; });
+  }, 1800);
   var targets = document.querySelectorAll("section .wrap > *");
   targets.forEach(function (el) { el.style.opacity = 0; });
   var io = new IntersectionObserver(function (entries) {
