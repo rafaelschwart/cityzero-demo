@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>City Zero · Brickell's Complete Gym — Free Guided Tour</title>
+<title>City Zero · Brickell Gym · Free Guided Tour</title>
 <link rel="icon" href="assets/logo-cz-mark.png">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -123,7 +123,7 @@
     <div>
       <div class="kick">BRICKELL · MIAMI · 591 SW 8TH ST</div>
       <h1>Four floors.<br>40+ classes.<br><em>One membership.</em></h1>
-      <p class="sub">Brickell's most complete gym: strength lofts, a rooftop turf, and 40+ weekly classes led by world-class instructors — including Zumba with its creator, Beto Pérez.</p>
+      <p class="sub">Strength lofts, a rooftop turf and 40+ weekly classes. Zumba here is taught by the man who created it, Beto P&eacute;rez.</p>
       <div class="proof">
         <span class="chip"><b>4.8★</b> on Google · 138 reviews</span>
         <span class="chip"><b>110K+</b> Instagram community</span>
@@ -134,7 +134,7 @@
       <a class="cta ghost" href="#plans" style="margin-left:10px">See memberships</a>
     </div>
     <form class="form" id="tour" onsubmit="return captureLead(event)">
-      <h3>Tour the gym free — today</h3>
+      <h3>Tour the gym free, today</h3>
       <p class="fs formnote">A coach walks you through all 4 floors. 20 minutes, zero pressure, and your first class is on us.</p>
       <label>Your name</label><input name="name" placeholder="Alex Rivera" required>
       <label>Phone (we confirm by text)</label><input name="phone" placeholder="(305) 555-0142" required>
@@ -169,12 +169,12 @@
     <div class="pcard">
       <div class="pname">ANNUAL PREPAID</div>
       <div class="price">$1,900<span>/yr</span></div>
-      <div class="save">The best rate — one payment</div>
+      <div class="save">The best rate, one payment</div>
       <ul><li>Everything included</li><li>Under $159/mo effective</li><li>Priority class booking</li><li>50% off the Beto Experience</li></ul>
       <a class="cta ghost" href="#tour">Start with a free tour</a>
     </div>
   </div>
-  <div class="mil"><b>Military & first responders: $129.99/mo, no contract.</b> Thank you for your service — bring your ID to your tour.</div>
+  <div class="mil"><b>Military & first responders: $129.99/mo, no contract.</b> Bring your military ID to your tour.</div>
 </div></section>
 
 <section id="classes"><div class="wrap">
@@ -204,6 +204,15 @@
     <div class="hb"><b>MON – FRI</b>5:00 AM – 11:00 PM</div>
     <div class="hb"><b>SATURDAY</b>7:00 AM – 8:00 PM</div>
     <div class="hb"><b>SUNDAY</b>8:00 AM – 6:00 PM</div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>The building does the talking</h2>
+  <div class="clsgrid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="cls" style="aspect-ratio:3/4"><img src="assets/site/h1-imageLeft.jpg" alt="Inside City Zero"></div>
+    <div class="cls" style="aspect-ratio:3/4"><img src="assets/site/h1-background-img1-CZ.jpg" alt="Training floor"></div>
+    <div class="cls" style="aspect-ratio:3/4"><img src="assets/site/h1-imageright-home-1.jpg" alt="Equipment"></div>
   </div>
 </div></section>
 
@@ -238,6 +247,23 @@ function captureLead(e) {
   document.getElementById("ok").style.display = "block";
   return false;
 }
+</script>
+<script src="vendor/anime.min.js"></script>
+<script>
+(function () {
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (typeof anime === "undefined") return;
+  var targets = document.querySelectorAll("section .wrap > *, .hero h1, .hero .sub, .hero .proof, .form");
+  targets.forEach(function (el) { el.style.opacity = 0; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      anime({ targets: en.target, opacity: [0, 1], translateY: [18, 0], duration: 650, easing: "easeOutExpo" });
+      io.unobserve(en.target);
+    });
+  }, { threshold: 0.15 });
+  targets.forEach(function (el) { io.observe(el); });
+})();
 </script>
 </body>
 </html>
