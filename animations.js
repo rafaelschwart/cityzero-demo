@@ -31,6 +31,7 @@ function countUp(el) {
 
 function animatePage() {
   if (REDUCED || typeof anime === "undefined") return;
+  if (window.innerWidth <= 640) return; // móvil: sin cascada de entrada (brincaba en cada navegación)
   anime.remove(".mcard,.acard,.panel,.metric,.scard,.icard,.kcol,.chartpanel,.donutpanel");
 
   // Section entrance: cards and panels rise in with a 30ms cascade.

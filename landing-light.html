@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/logo-cz-mark.png">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b0a09; --card:#101010; --line:rgba(222,219,200,.14); --tx:#f2f1e8; --mut:#8b8a80; --acc:#DEDBC8; --mint:#DEDBC8; --btntx:#1a1a12; }
+  :root { --bg:#0b0a09; --card:#101010; --line:rgba(222,219,200,.14); --tx:#f2f1e8; --mut:#a6a496; --acc:#DEDBC8; --mint:#DEDBC8; --btntx:#1a1a12; }
   html.light { --bg:#E7E5D8; --card:#F4F3EA; --line:rgba(20,20,16,.16); --tx:#161511; --mut:#6b6a5e; --acc:#161511; --mint:#161511; --btntx:#E7E5D8; }
   html.light .demo { background:#161511; color:#E7E5D8; }
   html.light .hero video, html.light .hero > img.bg { opacity:.5; }
@@ -27,6 +27,11 @@
   html.light .form .micro, html.light .lead, html.light .sub { color:#4a4940; }
   .thbtn2 { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:999px; border:1px solid var(--line); color:var(--tx); background:var(--card); }
   .thbtn2 svg { width:17px; height:17px; }
+  .hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(11,10,9,.85), rgba(11,10,9,.3) 55%, rgba(11,10,9,.55)); }
+  html.light .hero::before { background:linear-gradient(90deg, rgba(231,229,216,.88), rgba(231,229,216,.35) 55%, rgba(231,229,216,.65)); }
+  .hero .sub { color:#cbc9ba; }
+  .cls b { font-weight:800; text-shadow:0 2px 10px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.9); }
+  .rcard p { color:#d9d7c9; }
   .glow { position:absolute; top:-20%; right:-8%; width:55%; height:120%; background:radial-gradient(closest-side, rgba(222,219,200,.14), transparent 70%); pointer-events:none; }
   html.light .glow { background:radial-gradient(closest-side, rgba(20,20,16,.08), transparent 70%); }
   .marq { overflow:hidden; border-bottom:1px solid var(--line); padding:14px 0; white-space:nowrap; }
@@ -111,6 +116,14 @@
   footer .wrap { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; align-items:center; }
   .sticky { position:fixed; left:0; right:0; bottom:0; z-index:55; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:rgba(11,13,14,.92); backdrop-filter:blur(10px); border-top:1px solid var(--line); display:none; }
   .sticky .cta { display:block; text-align:center; background:var(--mint); color:#04331f; }
+  @media (max-width:640px) {
+    .hero .wrap { padding:40px 20px 36px; gap:28px; }
+    h2 { font-size:24px; }
+    .price { font-size:36px; }
+    .clsgrid[style] { grid-template-columns:1fr 1fr !important; }
+    .form { padding:20px; }
+    .nav { gap:14px; }
+  }
   @media (max-width:920px) {
     .hero .wrap { grid-template-columns:1fr; padding-top:44px; }
     .grid3, .rev, .hours { grid-template-columns:1fr; }

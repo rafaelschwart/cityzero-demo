@@ -2075,3 +2075,15 @@ html.animoff *, html.animoff *::before, html.animoff *::after { animation: none 
   #mobnav a svg { width: 20px; height: 20px; }
   #mobnav a.on { color: var(--foreground); background: color-mix(in oklab, var(--accent) 60%, transparent); }
 }
+
+/* sheet "More" móvil: todas las categorías, limpio */
+#mobsheet .msh-b { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 75; }
+#mobsheet .msh { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: var(--card); border-top: 1px solid var(--border); border-radius: 18px 18px 0 0; max-height: 74dvh; overflow-y: auto; padding: 14px 16px calc(88px + env(safe-area-inset-bottom)); animation: mshup .22s ease-out; }
+@keyframes mshup { from { transform: translateY(30px); opacity: 0; } }
+.msh-t { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; padding: 2px 2px 8px; }
+.msh-t span { cursor: pointer; color: var(--muted-foreground); padding: 2px 8px; font-size: 16px; }
+.msh-g { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground); margin: 12px 2px 4px; }
+.msh a { display: flex; align-items: center; gap: 11px; padding: 11px 8px; border-radius: 10px; color: var(--foreground); text-decoration: none; font-size: 14.5px; font-weight: 500; }
+.msh a:active { background: var(--accent); }
+.msh a svg { width: 17px; height: 17px; color: var(--muted-foreground); }
+@media (prefers-reduced-motion: reduce) { #mobsheet .msh { animation: none; } }

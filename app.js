@@ -300,6 +300,20 @@ function tickClock() {
 setInterval(tickClock, 1000);
 
 /* Bottom nav móvil (patrón 4thman): tabs fijos abajo + "More" → command palette */
+function mobMore() {
+  const old = document.getElementById("mobsheet");
+  if (old) { old.remove(); return; }
+  const sh = document.createElement("div");
+  sh.id = "mobsheet";
+  let h = `<div class="msh-b" onclick="mobMore()"></div><div class="msh"><div class="msh-t">${tr("All sections", "Todas las secciones")}<span onclick="mobMore()">✕</span></div>`;
+  SECTIONS.forEach(s2 => {
+    if (s2.group) h += `<div class="msh-g">${LANG === "es" && typeof T !== "undefined" && T[s2.group] ? T[s2.group] : s2.group}</div>`;
+    else h += `<a href="#${s2.id}" onclick="mobMore()">${NAV_ICONS[s2.id] || NAV_ICONS._}<span>${LANG === "es" && typeof T !== "undefined" && T[s2.label] ? T[s2.label] : s2.label}</span></a>`;
+  });
+  sh.innerHTML = h + "</div>";
+  document.body.appendChild(sh);
+}
+
 function mobNav(id) {
   let el = document.getElementById("mobnav");
   if (!el) { el = document.createElement("nav"); el.id = "mobnav"; document.body.appendChild(el); }
@@ -309,7 +323,7 @@ function mobNav(id) {
   ];
   el.innerHTML = items.map(([k, l]) =>
     `<a href="#${k}" class="${id === k ? "on" : ""}">${NAV_ICONS[k] || NAV_ICONS._}<span>${l}</span></a>`).join("") +
-    `<a href="#" onclick="event.preventDefault();openCmdk()">${KB_I.grid}<span>${tr("More", "Más")}</span></a>`;
+    `<a href="#" onclick="event.preventDefault();mobMore()">${KB_I.grid}<span>${tr("More", "Más")}</span></a>`;
 }
 
 /* Mini banner vivo bajo el logo: rota datos reales del mundo cada 3.5s */
