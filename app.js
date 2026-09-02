@@ -33,6 +33,7 @@ const NAV_ICONS = {
   engine: _nsvg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
   calendar: _nsvg('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="M8 13h3v3H8z"/>'),
   store: _nsvg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+  dailysheet: _nsvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/>'),
   profile: _nsvg('<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
   _: _nsvg('<circle cx="12" cy="12" r="2"/>'),
 };
@@ -43,6 +44,7 @@ const SECTIONS_SIMPLE = [
   { id: "hours", label: "Hours" },
   { id: "calendar", label: "Calendar" },
   { id: "classes", label: "Classes" },
+  { id: "dailysheet", label: "Daily Sheet", badge: () => "REAL", hot: false },
   { group: "More members" },
   { id: "grow", label: "Grow" },
   { id: "pipeline", label: "Pipeline", badge: () => DATA.pipeline.cards.filter(c => c.breach).length, hot: true },
@@ -77,6 +79,7 @@ const SECTIONS_FULL = [
   { group: "Gym OS · Glofox + BioStar" },
   { id: "calendar", label: "Calendar" },
   { id: "classes", label: "Classes" },
+  { id: "dailysheet", label: "Daily Sheet" },
   { id: "members", label: "Members" },
   { id: "access", label: "Access Control" },
   { group: "Growth" },
@@ -268,6 +271,7 @@ const SEC_SUB = {
   paidmedia: () => tr("The live cockpit of paid campaigns: pacing, lead quality and steering.", "La cabina en vivo de las campañas: ritmo, calidad de leads y volante."),
   pulsereport: () => tr("The monthly document the client receives: the closed month, explained.", "El documento mensual que recibe el cliente: el mes cerrado, explicado."),
   store: () => tr("Merch, shakes and day passes, measured — a Phase 2 concept.", "Merch, shakes y pases de día, medidos — concepto de Fase 2."),
+  dailysheet: () => tr("The front desk daily sheet, filled by Glofox, BioStar and Stripe instead of by hand.", "La hoja diaria del front desk, llenada por Glofox, BioStar y Stripe en vez de a mano."),
   engine: () => tr("Everything running underneath: 15 endpoints, 8 answers, one screen.", "Todo lo que corre debajo: 15 endpoints, 8 respuestas, una pantalla."),
   profile: () => tr("The demo account: read-only access and what it watches.", "La cuenta demo: acceso de solo lectura y qué observa."),
 };
@@ -4015,7 +4019,7 @@ const VIEWS = {
   workflows: vWorkflows, triggers: vTriggers, tasks: vTasks,
   analytics: vAnalytics, pulsereport: vPulseReport, paidmedia: vPaidMedia, meta: vMeta, integrations: vIntegrations, audit: vAudit,
   classes: vClassStats, calendar: vCalendar, access: vAccess, campaigns: vCampaigns, landing: vLanding,
-  store: vStore,
+  store: vStore, dailysheet: vDailySheet,
 };
 
 /* banner tematico por seccion (Higgsfield, mismo lenguaje del hero de Today) */
@@ -4030,6 +4034,7 @@ const SEC_HEROES = {
   paidmedia: ["Every ad dollar, measured", "Cada dólar de ads, medido"],
   pulsereport: ["What you receive every month", "Lo que recibes cada mes"],
   engine: ["Everything running underneath", "Todo lo que corre debajo"],
+  dailysheet: ["The daily sheet, filled before the shift ends", "La hoja diaria, llena antes de cerrar el turno"],
 };
 function heroFor(id) {
   const h = SEC_HEROES[id];
@@ -4037,7 +4042,7 @@ function heroFor(id) {
   const label = SECTIONS.find(s => s.id === id)?.label || "";
   return `
   <div class="hero sec">
-    <img src="assets/banners/${typeof THEME !== "undefined" && THEME === "light" ? "light/" : ""}${id === "calendar" ? "classes" : id}.webp" alt="" onerror="this.closest('.hero').remove()">
+    <img src="assets/banners/${typeof THEME !== "undefined" && THEME === "light" ? "light/" : ""}${id === "calendar" ? "classes" : id === "dailysheet" ? "pulsereport" : id}.webp" alt="" onerror="this.closest('.hero').remove()">
     <div class="heroshade"></div>
     <div class="herotxt"><span class="mono">CITY ZERO · ${esc(label.toUpperCase())}</span><b>${tr(h[0], h[1])}</b></div>
   </div>`;

@@ -13,13 +13,13 @@
   html.light .hero video, html.light .hero > img.bg { opacity:.5; }
   html.light header { background:rgba(231,229,216,.88); }
   html.light .sticky { background:rgba(231,229,216,.94); }
-  html.light .form input, html.light .form select { background:#fff; color:#161511; border-color:var(--line); }
+  html.light .form input, html.light .form select { background:#fff; color:#161511; border-color:rgba(20,20,16,.5); }
   html.light .chip { background:rgba(20,20,16,.05); }
   html.light .pcard.hot { box-shadow:0 0 0 1px #161511, 0 18px 40px rgba(20,20,16,.12); }
   html.light { --mut:#54534a; }
   html.light .pcard li, html.light .rcard p { color:#2e2d26; }
-  html.light .cta.ghost { border-color:rgba(20,20,16,.4); font-weight:700; }
-  html.light .chip { border-color:rgba(20,20,16,.28); }
+  html.light .cta.ghost { border-color:rgba(20,20,16,.52); font-weight:700; }
+  html.light .chip { border-color:rgba(20,20,16,.5); }
   html.light .cta { background:#161511; color:#EFEDE0; }
   html.light .cta.ghost { background:transparent; color:#161511; }
   html.light .form button { background:#161511; color:#EFEDE0; }
@@ -27,10 +27,14 @@
   html.light .form .micro, html.light .lead, html.light .sub { color:#4a4940; }
   .thbtn2 { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:999px; border:1px solid var(--line); color:var(--tx); background:var(--card); }
   .thbtn2 svg { width:17px; height:17px; }
-  .hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(11,10,9,.85), rgba(11,10,9,.3) 55%, rgba(11,10,9,.55)); }
-  html.light .hero::before { background:linear-gradient(90deg, rgba(231,229,216,.88), rgba(231,229,216,.35) 55%, rgba(231,229,216,.65)); }
-  .hero .sub { color:#cbc9ba; }
-  .cls b { font-weight:800; text-shadow:0 2px 10px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.9); }
+  .hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(11,10,9,.9), rgba(11,10,9,.48) 55%, rgba(11,10,9,.62)); }
+  html.light .hero::before { background:linear-gradient(90deg, rgba(231,229,216,.92), rgba(231,229,216,.5) 55%, rgba(231,229,216,.72)); }
+  html.light .hero .sub { color:#3a3931; }
+  html.light .form input::placeholder { color:#6b6a5e; opacity:1; }
+  html.light .nav a.cta { color:#EFEDE0; }
+  .hero .sub { color:#d6d4c6; }
+  .cls b { font-weight:800; color:#f7f6ee; z-index:2; text-shadow:0 2px 10px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.9); }
+  .cls:has(> b)::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(to top, rgba(6,6,5,.82) 0%, rgba(6,6,5,.35) 42%, rgba(6,6,5,0) 68%); }
   .rcard p { color:#d9d7c9; }
   .glow { position:absolute; top:-20%; right:-8%; width:55%; height:120%; background:radial-gradient(closest-side, rgba(222,219,200,.14), transparent 70%); pointer-events:none; }
   html.light .glow { background:radial-gradient(closest-side, rgba(20,20,16,.08), transparent 70%); }
@@ -51,9 +55,10 @@
   .nav a { color:var(--mut); text-decoration:none; font-size:14px; font-weight:600; }
   .nav a:hover { color:var(--tx); }
   .nav .cta { margin-left:auto; }
+  .nav a.cta { color:var(--btntx); }
   .cta { display:inline-block; background:var(--acc); color:#0b0d0e; font-weight:800; padding:13px 26px; border-radius:10px; text-decoration:none; font-size:15px; letter-spacing:.01em; transition:transform .15s ease; }
   .cta:hover { transform:translateY(-2px); }
-  .cta.ghost { background:transparent; color:var(--tx); border:1px solid var(--line); font-weight:600; }
+  .cta.ghost { background:transparent; color:var(--tx); border:1px solid rgba(222,219,200,.45); font-weight:600; }
   .hero { position:relative; overflow:hidden; border-bottom:1px solid var(--line); }
   .hero video, .hero > img.bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.38; }
   .hero .wrap { position:relative; display:grid; grid-template-columns:1.15fr .85fr; gap:44px; padding:72px 20px 64px; align-items:center; }
@@ -68,13 +73,14 @@
   .cta.ghost { background:transparent; color:var(--tx); }
   .sub { color:var(--mut); font-size:17px; margin:18px 0 22px; max-width:52ch; }
   .proof { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
-  .chip { border:1px solid var(--line); border-radius:999px; padding:6px 13px; font-size:12.5px; color:var(--tx); background:rgba(255,255,255,.04); }
+  .chip { border:1px solid rgba(222,219,200,.42); border-radius:999px; padding:6px 13px; font-size:12.5px; color:var(--tx); background:rgba(255,255,255,.04); }
   .chip b { color:var(--mint); }
   .form { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px; box-shadow:0 20px 50px rgba(0,0,0,.45); }
   .form h3 { font-size:20px; font-weight:800; }
   .form p.fs { color:var(--mut); font-size:13.5px; margin:6px 0 16px; }
   .form label { display:block; font-size:12px; font-weight:700; margin:12px 0 6px; letter-spacing:.04em; }
-  .form input, .form select { width:100%; height:46px; border-radius:10px; border:1px solid var(--line); background:#0e1113; color:var(--tx); padding:0 14px; font:inherit; font-size:15px; }
+  .form input, .form select { width:100%; height:46px; border-radius:10px; border:1px solid rgba(222,219,200,.42); background:#0e1113; color:var(--tx); padding:0 14px; font:inherit; font-size:15px; }
+  .form input::placeholder { color:#8f8d80; opacity:1; }
   .form button { width:100%; height:50px; margin-top:16px; border:0; border-radius:10px; background:var(--mint); color:#062; color:#04331f; font-weight:900; font-size:16px; cursor:pointer; }
   .form .micro { font-size:11.5px; color:var(--mut); margin-top:10px; text-align:center; }
   #ok { display:none; text-align:center; padding:26px 6px; }
@@ -213,7 +219,7 @@
 
 <section id="classes"><div class="wrap">
   <h2>40+ classes. Every week.</h2>
-  <p class="lead">From the world's most famous Zumba room to strength, spin and recovery — there's a coach and a slot waiting for your level.</p>
+  <p class="lead">From the world's most famous Zumba room to strength, spin and recovery, there's a coach and a slot waiting for your level.</p>
   <div class="clsgrid">
     <div class="cls"><img src="assets/classes/zumba.jpg" alt="Zumba"><b>Zumba · with Beto Pérez</b></div>
     <div class="cls"><img src="assets/classes/fbc.jpg" alt="Full Body Conditioning"><b>Full Body Conditioning</b></div>
@@ -255,7 +261,7 @@
   <div class="faq">
     <details><summary>Can I cancel?</summary><p>Yes. Month-to-month cancels with a simple 15-day notice. No exit fees, no games.</p></details>
     <details><summary>Can I pause my membership?</summary><p>Month-to-month freezes without limit. Annual plans freeze up to 3 months per year for $10/month.</p></details>
-    <details><summary>Is parking really included?</summary><p>Yes — parking, towel service and lockers come with every plan.</p></details>
+    <details><summary>Is parking really included?</summary><p>Yes. Parking, towel service and lockers come with every plan.</p></details>
     <details><summary>What happens on the free tour?</summary><p>A coach walks you through all four floors in about 20 minutes, matches you with classes for your level, and your first class is free. No card required.</p></details>
     <details><summary>Do you offer personal training?</summary><p>Every plan includes one complimentary PT session, and you can hire our trainers for tailored programs after that.</p></details>
   </div>
@@ -266,7 +272,7 @@
   <a class="cta" href="#tour">Book my free tour</a>
 </div></footer>
 
-<div class="sticky"><a class="cta" href="#tour">Book my free tour — no card needed</a></div>
+<div class="sticky"><a class="cta" href="#tour">Book my free tour, no card needed</a></div>
 
 <script>
 function captureLead(e) {
